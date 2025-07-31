@@ -3,6 +3,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
 
 export const authOptions = {
   adapter: PrismaAdapter(prisma),
@@ -14,6 +15,24 @@ export const authOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_ID as string,
       clientSecret: process.env.GOOGLE_SECRET as string,
+    }),
+    CredentialsProvider({
+      name: "Guest",
+      credentials: {
+        guest: { label: "Guest Mode", type: "boolean" },
+      },
+      async authorize(credentials) {
+        if (credentials?.guest === "true") {
+          const guestUser = await prisma.user.create({
+            data: {
+              name: `Guest-${Date.now()}`,
+              guest: true,
+            },
+          });
+          return guestUser;
+        }
+        return null;
+      },
     }),
   ],
   session: {
@@ -30,15 +49,23 @@ export const authOptions = {
       return session;
     },
     async jwt({ token, user }) {
-      const dbUser = await prisma.user.findFirst({
+      // If it's a new user from OAuth or Credentials (guest)
+      if (user) {
+        token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        token.picture = user.image;
+      }
+
+      // Fetch user from DB to ensure latest data
+      const dbUser = await prisma.user.findUnique({
         where: {
-          email: token.email,
+          id: token.id as number,
         },
       });
 
       if (!dbUser) {
-        token.id = user!.id;
-        return token;
+        return token; // User not found in DB, return existing token
       }
 
       return {

@@ -19,9 +19,8 @@ export default function SignInPage() {
         >
           Sign in with Google
         </button>
-        {/* Guest Mode - will implement later */}
         <button
-          onClick={() => alert("Guest mode coming soon!")}
+          onClick={() => signIn("credentials", { guest: "true", callbackUrl: "/" })}
           className="px-6 py-3 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-500 transition-colors"
         >
           Continue as Guest
