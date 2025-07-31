@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum FollowRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+// 使用者資料表
+model User {
+  id          Int               @id @default(autoincrement())
+  name        String
+  email       String?           @unique
+  password    String?           // null 代表透過 OAuth 或 guest
+  image       String?           // 頭像 URL
+  guest       Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // OAuth 帳號
+  accounts    OAuthAccount[]
+
+  // 追蹤
+  sentRequests     FollowRequest[] @relation("sentRequests")
+  receivedRequests FollowRequest[] @relation("receivedRequests")
+  followers        Follow[]        @relation("userFollowers")
+  following        Follow[]        @relation("userFollowing")
+
+  // 貼文、留言、按讚
+  posts        Post[]
+  comments     Comment[]
+  postLikes    PostLike[]
+  commentLikes CommentLike[]
+}
+
+// 第三方登入帳號
+model OAuthAccount {
+  id                 Int      @id @default(autoincrement())
+  provider           String
+  providerAccountId  String
+  accessToken        String?
+  refreshToken       String?
+  userId             Int
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+// 追蹤請求
+model FollowRequest {
+  id         Int                  @id @default(autoincrement())
+  fromId     Int
+  toId       Int
+  status     FollowRequestStatus @default(PENDING)
+  createdAt  DateTime             @default(now())
+
+  from       User @relation("sentRequests", fields: [fromId], references: [id], onDelete: Cascade)
+  to         User @relation("receivedRequests", fields: [toId],   references: [id], onDelete: Cascade)
+
+  @@unique([fromId, toId])
+}
+
+// 已建立的追蹤關係
+model Follow {
+  id          Int      @id @default(autoincrement())
+  followerId  Int
+  followingId Int
+  createdAt   DateTime @default(now())
+
+  follower    User @relation("userFollowing", fields: [followerId],  references: [id], onDelete: Cascade)
+  following   User @relation("userFollowers",  fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+}
+
+// 帖文
+model Post {
+  id         Int       @id @default(autoincrement())
+  authorId   Int
+  text       String?
+  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime  @updatedAt
+
+  author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  images     Image[]
+  comments   Comment[]
+  postLikes  PostLike[]
+}
+
+// 貼文圖片
+model Image {
+  id       Int    @id @default(autoincrement())
+  postId   Int
+  url      String
+  order    Int    @default(0)   // 圖片順序
+  post     Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+// 留言
+model Comment {
+  id         Int       @id @default(autoincrement())
+  postId     Int
+  authorId   Int
+  text       String
+  createdAt  DateTime  @default(now())
+
+  post       Post      @relation(fields: [postId],   references: [id], onDelete: Cascade)
+  author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  commentLikes CommentLike[]
+}
+
+// 文章按讚
+model PostLike {
+  id       Int     @id @default(autoincrement())
+  userId   Int
+  postId   Int
+  createdAt DateTime @default(now())
+
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post     Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+}
+
+// 留言按讚
+model CommentLike {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  commentId  Int
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId],    references: [id], onDelete: Cascade)
+  comment    Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+}
