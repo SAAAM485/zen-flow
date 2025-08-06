@@ -1,10 +1,12 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useSession } from 'next-auth/react';
 
-import Image from 'next/image'; // 引入 Image 組件
+import Image from 'next/image';
+import UserPostCard from '@/components/UserPostCard';
+import { PostWithRelations } from '@/types/prisma';
 
 // Define a type for the user profile data
 interface UserProfile {
@@ -16,12 +18,14 @@ interface UserProfile {
     followers: number;
     following: number;
   };
+  posts: PostWithRelations[];
 }
 
 export default function ProfilePage({ params }: { params: { userId: string } }) {
   const { data: session, status } = useSession();
-  const { userId } = params;
+  const { userId } = use(params);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [userPosts, setUserPosts] = useState<PostWithRelations[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,6 +42,7 @@ export default function ProfilePage({ params }: { params: { userId: string } }) 
         }
         const data: UserProfile = await res.json();
         setProfile(data);
+        setUserPosts(data.posts || []);
         // Initialize form fields if it's the current user's profile
         if (session?.user?.id === userId) {
           setName(data.name || '');
@@ -101,7 +106,7 @@ export default function ProfilePage({ params }: { params: { userId: string } }) 
 
   return (
     <div className="container mx-auto p-4 max-w-2xl">
-      <h1 className="text-3xl font-bold mb-6">{session?.user?.id === userId ? 'Your Profile' : `${profile.name}'s Profile`}</h1>
+      <h1 className="text-3xl font-bold mb-6">{session?.user?.id === userId ? 'Your Profile' : `${profile.name}&apos;s Profile`}</h1>
       <div className="bg-white shadow-md rounded-lg p-6 mb-6">
         <div className="flex items-center mb-4">
           <Image // 使用 Image 組件
@@ -155,6 +160,17 @@ export default function ProfilePage({ params }: { params: { userId: string } }) 
           </form>
         </div>
       )}
+
+      <div className="mt-6">
+        <h2 className="text-2xl font-bold mb-4">{profile.name}&apos;s Posts</h2>
+        {userPosts.length > 0 ? (
+          userPosts.map((post) => (
+            <UserPostCard key={post.id} post={post} />
+          ))
+        ) : (
+          <p className="text-center text-secondary-text">No posts found.</p>
+        )}
+      </div>
     </div>
   );
 }

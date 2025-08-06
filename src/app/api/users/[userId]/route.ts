@@ -27,7 +27,17 @@ export async function GET(
             followers: true, 
             following: true 
           }
-        }
+        },
+        posts: {
+          include: {
+            author: true,
+            postLikes: true,
+            comments: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
       },
     });
 

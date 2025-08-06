@@ -1,14 +1,10 @@
-// @ts-nocheck
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 
 // POST /api/comments/[commentId]/highlight - Highlight a comment
-export async function POST(
-    req: NextRequest,
-    context: any
-) {
+export async function POST(req: NextRequest, context: any) {
     const session = await getServerSession();
     if (!session?.user?.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -16,7 +12,10 @@ export async function POST(
 
     const commentId = parseInt(context.params.commentId, 10);
     if (isNaN(commentId)) {
-        return NextResponse.json({ error: "Invalid comment ID" }, { status: 400 });
+        return NextResponse.json(
+            { error: "Invalid comment ID" },
+            { status: 400 }
+        );
     }
     const userId = session.user.id;
 
@@ -53,10 +52,7 @@ export async function POST(
 }
 
 // DELETE /api/comments/[commentId]/highlight - Unhighlight a comment
-export async function DELETE(
-    req: NextRequest,
-    context: any
-) {
+export async function DELETE(req: NextRequest, context: any) {
     const session = await getServerSession();
     if (!session?.user?.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -64,7 +60,10 @@ export async function DELETE(
 
     const commentId = parseInt(context.params.commentId, 10);
     if (isNaN(commentId)) {
-        return NextResponse.json({ error: "Invalid comment ID" }, { status: 400 });
+        return NextResponse.json(
+            { error: "Invalid comment ID" },
+            { status: 400 }
+        );
     }
     const userId = session.user.id;
 
