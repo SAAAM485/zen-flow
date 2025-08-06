@@ -9,14 +9,15 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { userId: string } }
 ) {
-  const userId = parseInt(params.userId, 10);
-  if (isNaN(userId)) {
-    return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+  const { userId } = await params;
+  const parsedUserId = parseInt(userId, 10);
+  if (isNaN(parsedUserId)) {
+    return NextResponse.json({ message: "Invalid user ID" }, { status: 400 });
   }
 
   try {
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: parsedUserId },
       select: { // Explicitly select only public fields
         id: true,
         name: true,
@@ -42,14 +43,14 @@ export async function GET(
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json(user);
 
   } catch (error) {
     console.error(`Error fetching user ${userId}:`, error);
-    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+    return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
   }
 }
 
@@ -60,19 +61,20 @@ export async function PUT(
 ) {
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
-  const targetUserId = parseInt(params.userId, 10);
+  const { userId: targetUserIdString } = await params;
+  const targetUserId = parseInt(targetUserIdString, 10);
 
   if (isNaN(targetUserId)) {
-    return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+    return NextResponse.json({ message: "Invalid user ID" }, { status: 400 });
   }
 
   if (!currentUserId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   // Authorization check: User can only update their own profile
   if (currentUserId !== targetUserId) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
 
   try {
@@ -81,7 +83,7 @@ export async function PUT(
 
     // Basic validation
     if (typeof name !== 'string' || name.length < 1) {
-        return NextResponse.json({ error: "Invalid name" }, { status: 400 });
+        return NextResponse.json({ message: "Invalid name" }, { status: 400 });
     }
 
     const updatedUser = await prisma.user.update({
@@ -101,6 +103,6 @@ export async function PUT(
 
   } catch (error) {
     console.error(`Error updating user ${targetUserId}:`, error);
-    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+    return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
   }
 }

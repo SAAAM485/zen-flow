@@ -10,7 +10,8 @@ export async function POST(req: NextRequest, context: any) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const commentId = parseInt(context.params.commentId, 10);
+    const { commentId: commentIdString } = await context.params;
+    const commentId = parseInt(commentIdString, 10);
     if (isNaN(commentId)) {
         return NextResponse.json(
             { error: "Invalid comment ID" },
@@ -58,7 +59,8 @@ export async function DELETE(req: NextRequest, context: any) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const commentId = parseInt(context.params.commentId, 10);
+    const { commentId: commentIdString } = await context.params;
+    const commentId = parseInt(commentIdString, 10);
     if (isNaN(commentId)) {
         return NextResponse.json(
             { error: "Invalid comment ID" },

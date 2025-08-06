@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { PostWithRelations } from '@/types/prisma';
 import { toast } from 'sonner';
+import LoginPrompt from './LoginPrompt';
 
 interface CreatePostFormProps {
   onPostCreated: (newPost: PostWithRelations) => void;
@@ -17,6 +18,9 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
+  const isGuest = session?.user?.name?.startsWith('Guest-');
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -41,12 +45,14 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!text.trim() && !imageFile) {
-      toast.error('Post content or an image is required.');
+
+    if (!session || isGuest) {
+      setShowLoginPrompt(true);
       return;
     }
-    if (!session) {
-      toast.error('You must be logged in to create a post.');
+
+    if (!text.trim() && !imageFile) {
+      toast.error('Post content or an image is required.');
       return;
     }
 
@@ -95,17 +101,16 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
     }
   };
 
-  if (!session) return null;
-
   return (
     <div className="bg-secondary-bg shadow-md rounded-lg p-6 mb-8">
       <form onSubmit={handleSubmit}>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="What's on your mind?"
+          placeholder={isGuest ? 'Login to create a post...' : "What's on your mind?"}
           className="w-full p-2 border border-border-line rounded-md focus:outline-none focus:ring-2 focus:ring-primary-text"
           rows={3}
+          disabled={isGuest}
         />
         {imagePreview && (
           <div className="mt-4 relative">
@@ -121,7 +126,7 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
           </div>
         )}
         <div className="flex items-center justify-between mt-4">
-          <label htmlFor="image-upload" className="cursor-pointer bg-border-line text-primary-text py-2 px-4 rounded-md hover:bg-secondary-text">
+          <label htmlFor="image-upload" className={`cursor-pointer bg-border-line text-primary-text py-2 px-4 rounded-md ${isGuest ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary-text'}`}>
             Add Image
             <input
               id="image-upload"
@@ -129,18 +134,19 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
               accept="image/*"
               onChange={handleImageChange}
               className="hidden"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isGuest}
             />
           </label>
           <button
             type="submit"
-            disabled={isSubmitting || (!text.trim() && !imageFile)}
+            disabled={isSubmitting || (!text.trim() && !imageFile) || isGuest}
             className="bg-secondary-text text-secondary-bg py-2 px-4 rounded-md hover:bg-primary-text disabled:bg-border-line"
           >
             {isSubmitting ? 'Posting...' : 'Post'}
           </button>
         </div>
       </form>
+      {showLoginPrompt && <LoginPrompt onClose={() => setShowLoginPrompt(false)} />}
     </div>
   );
 };

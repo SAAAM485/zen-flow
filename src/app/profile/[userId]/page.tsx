@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import UserPostCard from '@/components/UserPostCard';
 import { PostWithRelations } from '@/types/prisma';
+import { toast } from 'sonner';
 
 // Define a type for the user profile data
 interface UserProfile {
@@ -27,7 +28,6 @@ export default function ProfilePage({ params }: { params: { userId: string } }) 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [userPosts, setUserPosts] = useState<PostWithRelations[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // State for the editable form
   const [name, setName] = useState('');
@@ -49,10 +49,11 @@ export default function ProfilePage({ params }: { params: { userId: string } }) 
           setImage(data.image || '');
         }
       } catch (err: unknown) {
+        setProfile(null); // Ensure profile is null on error
         if (err instanceof Error) {
-          setError(err.message);
+          toast.error(err.message);
         } else {
-          setError('An unknown error occurred');
+          toast.error('An unknown error occurred');
         }
       } finally {
         setIsLoading(false);
@@ -82,12 +83,12 @@ export default function ProfilePage({ params }: { params: { userId: string } }) 
 
       const updatedProfile: UserProfile = await res.json();
       setProfile(updatedProfile);
-      alert('Profile updated successfully!');
+      toast.success('Profile updated successfully!');
     } catch (err: unknown) {
       if (err instanceof Error) {
-        setError(err.message);
+        toast.error(err.message);
       } else {
-        setError('An unknown error occurred');
+        toast.error('An unknown error occurred');
       }
     }
   };
@@ -96,9 +97,7 @@ export default function ProfilePage({ params }: { params: { userId: string } }) 
     return <div className="text-center p-10">Loading...</div>;
   }
 
-  if (error) {
-    return <div className="text-center p-10 text-red-500">Error: {error}</div>;
-  }
+  
 
   if (!profile) {
     return <div className="text-center p-10">Could not load profile.</div>;

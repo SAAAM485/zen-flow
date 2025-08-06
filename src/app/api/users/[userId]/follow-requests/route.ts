@@ -16,7 +16,8 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const targetUserId = parseInt(params.userId, 10);
+  const { userId: userIdString } = await params;
+  const targetUserId = parseInt(userIdString, 10);
   if (isNaN(targetUserId)) {
     return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
   }
@@ -63,7 +64,8 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const targetUserId = parseInt(params.userId, 10);
+  const { userId: userIdString } = await params;
+  const targetUserId = parseInt(userIdString, 10);
   if (isNaN(targetUserId)) {
     return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
   }

@@ -23,7 +23,8 @@ export async function POST(
         );
     }
 
-    const postId = parseInt(params.postId);
+    const { postId: postIdString } = await context.params;
+    const postId = parseInt(postIdString);
     const userId = session.user.id;
 
     try {
@@ -63,7 +64,8 @@ export async function DELETE(
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const postId = parseInt(params.postId);
+    const { postId: postIdString } = await context.params;
+    const postId = parseInt(postIdString);
     const userId = session.user.id;
 
     try {

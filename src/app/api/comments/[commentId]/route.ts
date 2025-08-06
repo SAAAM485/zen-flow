@@ -12,7 +12,8 @@ export async function PUT(
 ) {
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
-  const commentId = parseInt(params.commentId, 10);
+  const { commentId: commentIdString } = await context.params;
+  const commentId = parseInt(commentIdString, 10);
 
   if (isNaN(commentId)) {
     return NextResponse.json({ error: "Invalid comment ID" }, { status: 400 });
@@ -53,7 +54,8 @@ export async function DELETE(
 ) {
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
-  const commentId = parseInt(params.commentId, 10);
+  const { commentId: commentIdString } = await context.params;
+  const commentId = parseInt(commentIdString, 10);
 
   if (isNaN(commentId)) {
     return NextResponse.json({ error: "Invalid comment ID" }, { status: 400 });

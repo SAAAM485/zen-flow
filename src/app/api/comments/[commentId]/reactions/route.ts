@@ -23,7 +23,8 @@ export async function POST(
         );
     }
 
-    const commentId = parseInt(params.commentId, 10);
+    const { commentId: commentIdString } = await context.params;
+    const commentId = parseInt(commentIdString, 10);
     if (isNaN(commentId)) {
         return NextResponse.json({ error: "Invalid comment ID" }, { status: 400 });
     }
@@ -66,7 +67,8 @@ export async function DELETE(
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const commentId = parseInt(params.commentId, 10);
+    const { commentId: commentIdString } = await context.params;
+    const commentId = parseInt(commentIdString, 10);
     if (isNaN(commentId)) {
         return NextResponse.json({ error: "Invalid comment ID" }, { status: 400 });
     }

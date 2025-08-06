@@ -18,7 +18,8 @@ export async function PUT(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const requestId = parseInt(params.requestId, 10);
+  const { requestId: requestIdString } = await context.params;
+  const requestId = parseInt(requestIdString, 10);
   if (isNaN(requestId)) {
     return NextResponse.json({ error: "Invalid request ID" }, { status: 400 });
   }

@@ -10,7 +10,8 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { postId: string } }
 ) {
-  const postId = parseInt(params.postId, 10);
+  const { postId: postIdString } = await params;
+  const postId = parseInt(postIdString, 10);
   if (isNaN(postId)) {
     return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
   }
@@ -50,7 +51,8 @@ export async function PUT(
 ) {
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
-  const postId = parseInt(params.postId, 10);
+  const { postId: postIdString } = await params;
+  const postId = parseInt(postIdString, 10);
 
   if (isNaN(postId)) {
     return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
@@ -91,7 +93,8 @@ export async function DELETE(
 ) {
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
-  const postId = parseInt(params.postId, 10);
+  const { postId: postIdString } = await params;
+  const postId = parseInt(postIdString, 10);
 
   if (isNaN(postId)) {
     return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
