@@ -32,32 +32,7 @@ export default function PostList({ initialPosts }: PostListProps) {
     toast.success('Post created successfully!');
   };
 
-  const handleCommentCreated = (postId: number, newComment: CommentWithAuthor) => {
-    const commentWithLikes = { ...newComment, commentLikes: [] };
-    setPosts(posts.map(p => p.id === postId ? { ...p, comments: [...p.comments, commentWithLikes] } : p));
-  };
-
-  const handleCommentUpdated = (postId: number, updatedComment: CommentWithAuthor) => {
-    setPosts(prevPosts => prevPosts.map(p => p.id === postId ? {
-      ...p,
-      comments: p.comments.map(c => c.id === updatedComment.id ? updatedComment : c)
-    } : p));
-  };
-
-  const handleCommentDeleted = (postId: number, commentId: number) => {
-    setPosts(prevPosts => prevPosts.map(p => p.id === postId ? {
-      ...p,
-      comments: p.comments.filter(c => c.id !== commentId)
-    } : p));
-  };
-
-  const handleReaction = async () => {
-    if (!session) {
-      setShowLoginPrompt(true);
-      return;
-    }
-    console.log("Reaction clicked");
-  };
+  
 
   const openDeleteModal = (postId: number) => {
     setPostToDelete(postId);
@@ -174,29 +149,18 @@ export default function PostList({ initialPosts }: PostListProps) {
               </div>
             </div>
           ) : (
-            <>
-              {post.text && <p className="text-primary-text mb-4">{post.text}</p>}
-              {post.imageUrl && (
-                <div className="mb-4">
-                  <Image src={post.imageUrl} alt="Post image" width={500} height={300} className="rounded-md object-cover w-full" />
-                </div>
-              )}
-            </>
+            <Link href={`/posts/${post.id}`}>
+              <div className="cursor-pointer">
+                {post.text && <p className="text-primary-text mb-4">{post.text}</p>}
+                {post.imageUrl && (
+                  <div className="mb-4">
+                    <Image src={post.imageUrl} alt="Post image" width={500} height={300} className="rounded-md object-cover w-full" />
+                  </div>
+                )}
+              </div>
+            </Link>
           )}
-          <div className="flex items-center space-x-4 mb-4">
-            {Object.values(ReactionType).map((type) => (
-              <button key={type} onClick={handleReaction} className="px-3 py-1 rounded-full border border-border-line bg-secondary-bg text-primary-text hover:bg-primary-text hover:text-secondary-bg">
-                {type} ({post.postLikes.filter(like => like.type === type).length})
-              </button>
-            ))}
-          </div>
-          <CommentSection 
-            post={post} 
-            onCommentCreated={handleCommentCreated} 
-            onCommentUpdated={handleCommentUpdated} 
-            onCommentDeleted={handleCommentDeleted} 
-            setShowLoginPrompt={setShowLoginPrompt} 
-          />
+          
         </div>
       ))}
       {showLoginPrompt && <LoginPrompt onClose={() => setShowLoginPrompt(false)} />}

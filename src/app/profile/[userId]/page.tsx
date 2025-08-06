@@ -106,7 +106,7 @@ export default function ProfilePage({ params }: { params: { userId: string } }) 
 
   return (
     <div className="container mx-auto p-4 max-w-2xl">
-      <h1 className="text-3xl font-bold mb-6">{session?.user?.id === userId ? 'Your Profile' : `${profile.name}&apos;s Profile`}</h1>
+      <h1 className="text-3xl font-bold mb-6">Profile</h1>
       <div className="bg-white shadow-md rounded-lg p-6 mb-6">
         <div className="flex items-center mb-4">
           <Image // 使用 Image 組件

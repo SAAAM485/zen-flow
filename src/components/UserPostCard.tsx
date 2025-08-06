@@ -31,13 +31,7 @@ export default function UserPostCard({ post }: UserPostCardProps) {
           )}
         </div>
       </Link>
-      <div className="flex items-center space-x-4 mb-4">
-        {Object.values(ReactionType).map((type) => (
-          <button key={type} className="px-3 py-1 rounded-full border border-border-line bg-secondary-bg text-primary-text">
-            {type} ({post.postLikes.filter(like => like.type === type).length})
-          </button>
-        ))}
-      </div>
+      
     </div>
   );
 }
