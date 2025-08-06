@@ -85,16 +85,18 @@ model Post {
   id         Int       @id @default(autoincrement())
   authorId   Int
   text       String?
+  imageUrl   String?   // 新增的圖片 URL 欄位
   createdAt  DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt  DateTime  @updatedAt
 
   author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  images     Image[]
+  // images     Image[]   // 暫時註解掉，未來可擴展為多圖
   comments   Comment[]
   postLikes  PostLike[]
 }
 
-// 貼文圖片
+// 貼文圖片 (暫時未使用)
+/*
 model Image {
   id       Int    @id @default(autoincrement())
   postId   Int
@@ -102,42 +104,53 @@ model Image {
   order    Int    @default(0)   // 圖片順序
   post     Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
+*/
+
+enum ReactionType {
+  LIKE
+  INSIGHTFUL
+  THANKS
+  HAHA
+}
 
 // 留言
 model Comment {
-  id         Int       @id @default(autoincrement())
-  postId     Int
-  authorId   Int
-  text       String
-  createdAt  DateTime  @default(now())
+  id            Int       @id @default(autoincrement())
+  postId        Int
+  authorId      Int
+  text          String
+  isHighlighted Boolean   @default(false) // 由作者標記為優質留言
+  createdAt     DateTime  @default(now())
 
-  post       Post      @relation(fields: [postId],   references: [id], onDelete: Cascade)
-  author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  commentLikes CommentLike[]
+  post          Post      @relation(fields: [postId],   references: [id], onDelete: Cascade)
+  author        User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  commentLikes  CommentLike[]
 }
 
 // 文章按讚
 model PostLike {
-  id       Int     @id @default(autoincrement())
-  userId   Int
-  postId   Int
-  createdAt DateTime @default(now())
+  id        Int          @id @default(autoincrement())
+  userId    Int
+  postId    Int
+  type      ReactionType @default(LIKE)
+  createdAt DateTime     @default(now())
 
-  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post     Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
 }
 
 // 留言按讚
 model CommentLike {
-  id         Int      @id @default(autoincrement())
-  userId     Int
-  commentId  Int
-  createdAt  DateTime @default(now())
+  id        Int          @id @default(autoincrement())
+  userId    Int
+  commentId Int
+  type      ReactionType @default(LIKE)
+  createdAt DateTime     @default(now())
 
-  user       User     @relation(fields: [userId],    references: [id], onDelete: Cascade)
-  comment    Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId],    references: [id], onDelete: Cascade)
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
   @@unique([userId, commentId])
 }
