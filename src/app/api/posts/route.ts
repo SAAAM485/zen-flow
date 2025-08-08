@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 // GET /api/posts - Fetch all posts for the feed
-export async function GET(_req: NextRequest) {
+export async function GET() {
   try {
     const posts = await prisma.post.findMany({
       orderBy: {

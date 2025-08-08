@@ -1,5 +1,5 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { AuthOptions, Session, User, Account, Profile } from "next-auth";
+import { AuthOptions, Session, User } from "next-auth";
 import { AdapterUser } from "next-auth/adapters";
 import { JWT } from "next-auth/jwt";
 import GitHubProvider from "next-auth/providers/github";
@@ -28,7 +28,7 @@ export const authOptions: AuthOptions = {
       }
       return session;
     },
-    jwt: async ({ token, user, account: _account, profile: _profile, isNewUser: _isNewUser }: { token: JWT; user?: User | AdapterUser; account?: Account | null; profile?: Profile; isNewUser?: boolean }): Promise<JWT> => {
+    jwt: async ({ token, user }: { token: JWT; user?: User | AdapterUser }): Promise<JWT> => {
       if (user) {
         token.id = user.id as number;
       }
