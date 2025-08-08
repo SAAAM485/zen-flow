@@ -1,25 +1,25 @@
 "use client";
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useContext } from 'react';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { PostWithRelations, CommentWithAuthor } from '@/types/prisma';
 import { ReactionType } from '@prisma/client';
 import CommentSection from '@/components/CommentSection';
-import LoginPrompt from '@/components/LoginPrompt';
 import ConfirmModal from '@/components/ConfirmModal';
 import { toast } from 'sonner';
+import { LoginPromptContext } from '@/context/LoginPromptContext';
 
 export default function SinglePostPage({ params }: { params: { postId: string } }) {
   const { postId } = use(params);
   const { data: session } = useSession();
+  const { setShowLoginPrompt } = useContext(LoginPromptContext);
   const [post, setPost] = useState<PostWithRelations | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<number | null>(null);
   const currentUser = session?.user;
@@ -229,10 +229,8 @@ export default function SinglePostPage({ params }: { params: { postId: string } 
           onCommentCreated={handleCommentCreated} 
           onCommentUpdated={handleCommentUpdated} 
           onCommentDeleted={handleCommentDeleted} 
-          setShowLoginPrompt={setShowLoginPrompt} 
         />
       </div>
-      {showLoginPrompt && <LoginPrompt onClose={() => setShowLoginPrompt(false)} />}
       <ConfirmModal 
         isOpen={isModalOpen}
         onClose={closeDeleteModal}

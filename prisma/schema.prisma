@@ -20,7 +20,6 @@ model User {
   email       String?           @unique
   password    String?           // null 代表透過 OAuth 或 guest
   image       String?           // 頭像 URL
-  guest       Boolean           @default(false)
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 

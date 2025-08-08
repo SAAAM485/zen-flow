@@ -1,12 +1,16 @@
 'use client';
 
+import { useContext } from 'react';
 import { signIn } from 'next-auth/react';
+import { LoginPromptContext } from '@/context/LoginPromptContext';
 
-interface LoginPromptProps {
-  onClose: () => void;
-}
+const LoginPrompt: React.FC = () => {
+  const { showLoginPrompt, setShowLoginPrompt } = useContext(LoginPromptContext);
 
-const LoginPrompt: React.FC<LoginPromptProps> = ({ onClose }) => {
+  if (!showLoginPrompt) {
+    return null;
+  }
+
   return (
     <div className="fixed inset-0 bg-primary-text bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-secondary-bg p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
@@ -26,13 +30,7 @@ const LoginPrompt: React.FC<LoginPromptProps> = ({ onClose }) => {
             使用 Google 登入
           </button>
           <button
-            onClick={() => signIn('credentials', { guest: 'true', callbackUrl: '/' })}
-            className="px-6 py-3 bg-secondary-text text-secondary-bg rounded-lg shadow-md hover:bg-primary-text transition-colors"
-          >
-            以訪客身份繼續
-          </button>
-          <button
-            onClick={onClose}
+            onClick={() => setShowLoginPrompt(false)}
             className="mt-4 text-primary-text hover:text-secondary-text"
           >
             稍後再說

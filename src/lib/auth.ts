@@ -4,7 +4,6 @@ import { AdapterUser } from "next-auth/adapters";
 import { JWT } from "next-auth/jwt";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
-import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 
 export const authOptions: AuthOptions = {
@@ -17,30 +16,6 @@ export const authOptions: AuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_ID as string,
       clientSecret: process.env.GOOGLE_SECRET as string,
-    }),
-    CredentialsProvider({
-      name: "Guest",
-      credentials: {
-        guest: { label: "Guest Mode", type: "boolean" },
-      },
-                                                                                                            async authorize(credentials) {
-        if (credentials?.guest === "true") {
-          try {
-            const guestUser = await prisma.user.create({
-              data: {
-                name: `Guest-${Math.random().toString(36).substring(7)}`,
-                email: null,
-                guest: true,
-              },
-            });
-            return guestUser;
-          } catch (error) {
-            console.error("Failed to create guest user:", error);
-            return null;
-          }
-        }
-        return null;
-      },
     }),
   ],
   session: {

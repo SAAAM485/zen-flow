@@ -1,12 +1,12 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { PostWithRelations } from '@/types/prisma';
 import { toast } from 'sonner';
-import LoginPrompt from './LoginPrompt';
+import { LoginPromptContext } from '@/context/LoginPromptContext';
 
 interface CreatePostFormProps {
   onPostCreated: (newPost: PostWithRelations) => void;
@@ -18,9 +18,14 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const { setShowLoginPrompt } = useContext(LoginPromptContext);
 
-  const isGuest = session?.user?.name?.startsWith('Guest-');
+  const handleClick = (e: React.MouseEvent) => {
+    if (!session) {
+      e.preventDefault();
+      setShowLoginPrompt(true);
+    }
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -36,7 +41,6 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
   const handleClearImage = () => {
     setImageFile(null);
     setImagePreview(null);
-    // Clear the file input value
     const fileInput = document.getElementById('image-upload') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
@@ -46,7 +50,7 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!session || isGuest) {
+    if (!session) {
       setShowLoginPrompt(true);
       return;
     }
@@ -91,7 +95,7 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
       const newPost = await res.json();
       onPostCreated(newPost);
       setText('');
-      handleClearImage(); // Clear image after successful post
+      handleClearImage();
       toast.success('Post created successfully!');
     } catch (error) {
       console.error(error);
@@ -107,10 +111,11 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder={isGuest ? 'Login to create a post...' : "What's on your mind?"}
+          onClick={handleClick}
+          placeholder="What's on your mind?"
           className="w-full p-2 border border-border-line rounded-md focus:outline-none focus:ring-2 focus:ring-primary-text"
           rows={3}
-          disabled={isGuest}
+          readOnly={!session}
         />
         {imagePreview && (
           <div className="mt-4 relative">
@@ -126,7 +131,7 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
           </div>
         )}
         <div className="flex items-center justify-between mt-4">
-          <label htmlFor="image-upload" className={`cursor-pointer bg-border-line text-primary-text py-2 px-4 rounded-md ${isGuest ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary-text'}`}>
+          <label htmlFor="image-upload" onClick={handleClick} className="cursor-pointer bg-border-line text-primary-text py-2 px-4 rounded-md hover:bg-secondary-text">
             Add Image
             <input
               id="image-upload"
@@ -134,19 +139,18 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
               accept="image/*"
               onChange={handleImageChange}
               className="hidden"
-              disabled={isSubmitting || isGuest}
+              disabled={isSubmitting}
             />
           </label>
           <button
             type="submit"
-            disabled={isSubmitting || (!text.trim() && !imageFile) || isGuest}
+            disabled={isSubmitting || (!text.trim() && !imageFile)}
             className="bg-secondary-text text-secondary-bg py-2 px-4 rounded-md hover:bg-primary-text disabled:bg-border-line"
           >
             {isSubmitting ? 'Posting...' : 'Post'}
           </button>
         </div>
       </form>
-      {showLoginPrompt && <LoginPrompt onClose={() => setShowLoginPrompt(false)} />}
     </div>
   );
 };

@@ -1,24 +1,25 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { PostWithRelations, CommentWithAuthor } from '@/types/prisma';
 import { toast } from 'sonner';
 import ConfirmModal from './ConfirmModal';
+import { LoginPromptContext } from '@/context/LoginPromptContext';
 
 interface CommentSectionProps {
   post: PostWithRelations;
   onCommentCreated: (postId: number, newComment: CommentWithAuthor) => void;
   onCommentUpdated: (postId: number, updatedComment: CommentWithAuthor) => void;
   onCommentDeleted: (postId: number, commentId: number) => void;
-  setShowLoginPrompt: (show: boolean) => void;
 }
 
-const CommentSection: React.FC<CommentSectionProps> = ({ post, onCommentCreated, onCommentUpdated, onCommentDeleted, setShowLoginPrompt }) => {
+const CommentSection: React.FC<CommentSectionProps> = ({ post, onCommentCreated, onCommentUpdated, onCommentDeleted }) => {
   const { data: session } = useSession();
+  const { setShowLoginPrompt } = useContext(LoginPromptContext);
   const [text, setText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
@@ -26,6 +27,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post, onCommentCreated,
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
   const currentUser = session?.user;
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (!session) {
+      e.preventDefault();
+      setShowLoginPrompt(true);
+    }
+  };
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -171,25 +179,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post, onCommentCreated,
           </div>
         </div>
       ))}
-      {session ? (
-        <form onSubmit={handleCommentSubmit} className="mt-2 ml-4">
-          <input type="text" value={text} onChange={(e) => setText(e.target.value)} placeholder="Write a comment..." className="w-full p-2 border border-border-line rounded-md" />
-          <div className="text-right mt-1">
-            <button type="submit" disabled={isSubmitting || !text.trim()} className="text-sm bg-secondary-text text-secondary-bg py-1 px-3 rounded-md hover:bg-primary-text disabled:bg-border-line">
-              {isSubmitting ? 'Replying...' : 'Reply'}
-            </button>
-          </div>
-        </form>
-      ) : (
-        <div className="mt-2 ml-4">
-          <button
-            onClick={() => setShowLoginPrompt(true)}
-            className="w-full p-2 border border-border-line rounded-md text-left text-secondary-text hover:bg-primary-text"
-          >
-            Write a comment...
+      <form onSubmit={handleCommentSubmit} className="mt-2 ml-4">
+        <input type="text" value={text} onChange={(e) => setText(e.target.value)} onClick={handleClick} placeholder="Write a comment..." className="w-full p-2 border border-border-line rounded-md" readOnly={!session} />
+        <div className="text-right mt-1">
+          <button type="submit" disabled={isSubmitting || !text.trim()} className="text-sm bg-secondary-text text-secondary-bg py-1 px-3 rounded-md hover:bg-primary-text disabled:bg-border-line">
+            {isSubmitting ? 'Replying...' : 'Reply'}
           </button>
         </div>
-      )}
+      </form>
       <ConfirmModal 
         isOpen={isModalOpen}
         onClose={closeDeleteModal}
