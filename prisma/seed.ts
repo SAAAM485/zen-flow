@@ -10,7 +10,6 @@ async function main() {
   await prisma.commentLike.deleteMany();
   await prisma.postLike.deleteMany();
   await prisma.comment.deleteMany();
-  // await prisma.image.deleteMany(); // 暫時註解掉，因為 Image 模型已註解
   await prisma.post.deleteMany();
   await prisma.follow.deleteMany();
   await prisma.followRequest.deleteMany();
@@ -25,7 +24,6 @@ async function main() {
         name: faker.person.fullName(),
         email: faker.internet.email(),
         image: faker.image.avatar(),
-        guest: false,
         password: faker.internet.password(), // 僅為測試目的，實際應用中不應這樣處理密碼
       },
     });
@@ -41,7 +39,7 @@ async function main() {
         data: {
           authorId: user.id,
           text: faker.lorem.paragraph(),
-          imageUrl: faker.helpers.arrayElement([faker.image.urlPicsumPhotos(), null]), // 隨機加入圖片 URL 或為 null
+          imageUrls: Array.from({ length: faker.number.int({ min: 0, max: 3 }) }, () => faker.image.urlPicsumPhotos()), // 隨機加入 0-3 張圖片
         },
       });
       posts.push(post);

@@ -1,14 +1,18 @@
-// @ts-nocheck
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { ReactionType } from "@prisma/client";
 
+interface ReactionsContext {
+  params: {
+    postId: string;
+  };
+}
+
 // POST /api/posts/[postId]/reactions - Add or update a reaction to a post
 export async function POST(
     req: NextRequest,
-    context: any
+    context: ReactionsContext
 ) {
     const session = await getServerSession();
     if (!session?.user?.id) {
@@ -23,8 +27,11 @@ export async function POST(
         );
     }
 
-    const { postId: postIdString } = await context.params;
-    const postId = parseInt(postIdString);
+    const { postId: postIdString } = context.params;
+    const postId = parseInt(postIdString, 10);
+    if (isNaN(postId)) {
+        return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
+    }
     const userId = session.user.id;
 
     try {
@@ -57,15 +64,18 @@ export async function POST(
 // DELETE /api/posts/[postId]/reactions - Remove a reaction from a post
 export async function DELETE(
     req: NextRequest,
-    context: any
+    context: ReactionsContext
 ) {
     const session = await getServerSession();
     if (!session?.user?.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { postId: postIdString } = await context.params;
-    const postId = parseInt(postIdString);
+    const { postId: postIdString } = context.params;
+    const postId = parseInt(postIdString, 10);
+    if (isNaN(postId)) {
+        return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
+    }
     const userId = session.user.id;
 
     try {

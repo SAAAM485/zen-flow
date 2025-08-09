@@ -9,6 +9,7 @@ describe("GET /api/posts", () => {
         id: 2,
         text: "Second post",
         authorId: 1,
+        imageUrls: [],
         createdAt: new Date("2025-07-31T10:00:00.000Z"),
         updatedAt: new Date("2025-07-31T10:00:00.000Z"),
       },
@@ -16,14 +17,14 @@ describe("GET /api/posts", () => {
         id: 1,
         text: "First post",
         authorId: 1,
+        imageUrls: ["http://example.com/image.png"],
         createdAt: new Date("2025-07-31T09:00:00.000Z"),
         updatedAt: new Date("2025-07-31T09:00:00.000Z"),
       },
     ];
-    prismaMock.post.findMany.mockResolvedValue(mockPosts);
+    prismaMock.post.findMany.mockResolvedValue(mockPosts as any);
 
-    const req = {} as NextRequest;
-    const response = await GET(req);
+    const response = await GET();
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -58,8 +59,7 @@ describe("GET /api/posts", () => {
   it("should return 500 if an internal server error occurs", async () => {
     prismaMock.post.findMany.mockRejectedValue(new Error("Database error"));
 
-    const req = {} as NextRequest;
-    const response = await GET(req);
+    const response = await GET();
     const data = await response.json();
 
     expect(response.status).toBe(500);
@@ -70,6 +70,7 @@ describe("GET /api/posts", () => {
 describe("POST /api/posts", () => {
   const MOCK_USER_ID = 1;
   const MOCK_POST_TEXT = "This is a new test post.";
+  const MOCK_IMAGE_URLS = ["http://example.com/image1.jpg"];
 
   beforeEach(() => {
     getServerSessionMock.mockResolvedValue({
@@ -77,74 +78,84 @@ describe("POST /api/posts", () => {
     });
   });
 
-  it("should create a new post successfully", async () => {
+  it("should create a new post with text and images", async () => {
     const mockPost = {
       id: 1,
       text: MOCK_POST_TEXT,
       authorId: MOCK_USER_ID,
+      imageUrls: MOCK_IMAGE_URLS,
       createdAt: new Date(),
       updatedAt: new Date(),
+      comments: [],
+      postLikes: [],
     };
-    prismaMock.post.create.mockResolvedValue(mockPost);
+    prismaMock.post.create.mockResolvedValue(mockPost as any);
 
     const req = {
-      json: async () => ({ text: MOCK_POST_TEXT }),
+      json: async () => ({ text: MOCK_POST_TEXT, imageUrls: MOCK_IMAGE_URLS }),
     } as NextRequest;
 
     const response = await POST(req);
     const data = await response.json();
 
     expect(response.status).toBe(201);
-    expect(data).toEqual(expect.objectContaining({ text: MOCK_POST_TEXT }));
+    expect(data).toEqual(expect.objectContaining({ text: MOCK_POST_TEXT, imageUrls: MOCK_IMAGE_URLS }));
     expect(prismaMock.post.create).toHaveBeenCalledWith({
       data: {
         text: MOCK_POST_TEXT,
+        imageUrls: MOCK_IMAGE_URLS,
         authorId: MOCK_USER_ID,
       },
       include: {
         author: true,
+        comments: { include: { author: true, commentLikes: { include: { user: true } } } },
+        postLikes: { include: { user: true } },
       },
     });
   });
 
+  it("should create a new post with only text", async () => {
+    const req = {
+      json: async () => ({ text: MOCK_POST_TEXT, imageUrls: [] }),
+    } as NextRequest;
+    await POST(req);
+    expect(prismaMock.post.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: { text: MOCK_POST_TEXT, imageUrls: [], authorId: MOCK_USER_ID },
+    }));
+  });
+
+  it("should create a new post with only images", async () => {
+    const req = {
+      json: async () => ({ text: null, imageUrls: MOCK_IMAGE_URLS }),
+    } as NextRequest;
+    await POST(req);
+    expect(prismaMock.post.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: { text: null, imageUrls: MOCK_IMAGE_URLS, authorId: MOCK_USER_ID },
+    }));
+  });
+
   it("should return 401 if unauthorized", async () => {
     getServerSessionMock.mockResolvedValue(null);
-
-    const req = {
-      json: async () => ({ text: MOCK_POST_TEXT }),
-    } as NextRequest;
+    const req = { json: async () => ({ text: MOCK_POST_TEXT }) } as NextRequest;
     const response = await POST(req);
     const data = await response.json();
-
     expect(response.status).toBe(401);
     expect(data).toEqual({ error: "Unauthorized" });
   });
 
-  it.each([
-    [null, "missing"],
-    ["", "empty"],
-    [123, "not a string"],
-  ])("should return 400 if text content is %s", async (text, scenario) => {
-    const req = {
-      json: async () => ({ text }),
-    } as NextRequest;
+  it("should return 400 if both text and imageUrls are missing", async () => {
+    const req = { json: async () => ({ text: ' ', imageUrls: [] }) } as NextRequest;
     const response = await POST(req);
     const data = await response.json();
-
     expect(response.status).toBe(400);
-    expect(data).toEqual({ error: "Text content is required" });
+    expect(data).toEqual({ error: "Post content or an image is required" });
   });
 
   it("should return 500 if an internal server error occurs", async () => {
     prismaMock.post.create.mockRejectedValue(new Error("Database error"));
-
-    const req = {
-      json: async () => ({ text: MOCK_POST_TEXT }),
-    } as NextRequest;
-
+    const req = { json: async () => ({ text: MOCK_POST_TEXT }) } as NextRequest;
     const response = await POST(req);
     const data = await response.json();
-
     expect(response.status).toBe(500);
     expect(data).toEqual({ error: "Something went wrong" });
   });

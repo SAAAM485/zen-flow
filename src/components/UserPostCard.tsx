@@ -41,15 +41,20 @@ export default function UserPostCard({ post }: UserPostCardProps) {
                     {post.text && (
                         <p className="text-primary-text mb-4">{post.text}</p>
                     )}
-                    {post.imageUrl && (
-                        <div className="mb-4">
-                            <Image
-                                src={post.imageUrl}
-                                alt="Post image"
-                                width={500}
-                                height={300}
-                                className="rounded-md object-cover w-full"
-                            />
+                    {post.imageUrls && post.imageUrls.length > 0 && (
+                        <div className="mb-4 -mx-6 md:mx-0">
+                            <div className={`grid gap-1 ${post.imageUrls.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                                {post.imageUrls.map((url, index) => (
+                                    <div key={index} className="relative aspect-video bg-secondary-bg">
+                                        <Image
+                                            src={url}
+                                            alt={`Post image ${index + 1}`}
+                                            fill
+                                            className="object-contain md:rounded-md"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>

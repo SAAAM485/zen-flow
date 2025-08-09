@@ -3,17 +3,24 @@ import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request): Promise<NextResponse> {
-  const { searchParams } = new URL(request.url);
-  const filename = searchParams.get('filename');
+  const formData = await request.formData();
+  const files = formData.getAll('files') as File[];
 
-  if (!filename || !request.body) {
-    return NextResponse.json({ message: 'No filename or body found' }, { status: 400 });
+  if (!files || files.length === 0) {
+    return NextResponse.json({ message: 'No files found' }, { status: 400 });
   }
 
-  // ⚠️ The below code is for App Router Route Handlers. See `pages` directory for Pages Router examples.
-  const blob = await put(filename, request.body, {
-    access: 'public',
-  });
+  const blobs = [];
+  for (const file of files) {
+    if (!file.name || !file.stream) {
+      continue; // Skip if file is not valid
+    }
+    const blob = await put(file.name, file.stream(), {
+      access: 'public',
+      contentType: file.type,
+    });
+    blobs.push(blob);
+  }
 
-  return NextResponse.json(blob);
+  return NextResponse.json({ blobs });
 }

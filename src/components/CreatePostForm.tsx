@@ -15,8 +15,8 @@ interface CreatePostFormProps {
 const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
   const { data: session } = useSession();
   const [text, setText] = useState('');
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { setShowLoginPrompt } = useContext(LoginPromptContext);
 
@@ -28,24 +28,34 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    } else {
-      setImageFile(null);
-      setImagePreview(null);
+    const files = e.target.files;
+    if (files) {
+      const newFiles = Array.from(files);
+      setImageFiles(prevFiles => [...prevFiles, ...newFiles]);
+      const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+      setImagePreviews(prevPreviews => [...prevPreviews, ...newPreviews]);
     }
   };
 
-  const handleClearImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
+  const handleRemoveImage = (index: number) => {
+    setImageFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+    setImagePreviews(prevPreviews => {
+      const newPreviews = prevPreviews.filter((_, i) => i !== index);
+      // Revoke the object URL to prevent memory leaks
+      URL.revokeObjectURL(prevPreviews[index]);
+      return newPreviews;
+    });
+  };
+
+  const clearAllImages = () => {
+    imagePreviews.forEach(url => URL.revokeObjectURL(url));
+    setImageFiles([]);
+    setImagePreviews([]);
     const fileInput = document.getElementById('image-upload') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,38 +65,37 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
       return;
     }
 
-    if (!text.trim() && !imageFile) {
+    if (!text.trim() && imageFiles.length === 0) {
       toast.error('Post content or an image is required.');
       return;
     }
 
     setIsSubmitting(true);
-    let imageUrl: string | null = null;
+    let imageUrls: string[] = [];
 
     try {
-      if (imageFile) {
+      if (imageFiles.length > 0) {
         const formData = new FormData();
-        formData.append('file', imageFile);
+        imageFiles.forEach(file => {
+          formData.append('files', file);
+        });
 
-        const uploadRes = await fetch(`/api/upload?filename=${imageFile.name}`, {
+        const uploadRes = await fetch('/api/upload', {
           method: 'POST',
-          body: imageFile,
-          headers: {
-            'Content-Type': imageFile.type,
-          },
+          body: formData,
         });
 
         if (!uploadRes.ok) {
-          throw new Error('Failed to upload image');
+          throw new Error('Failed to upload images');
         }
-        const blob = await uploadRes.json();
-        imageUrl = blob.url;
+        const { blobs } = await uploadRes.json();
+        imageUrls = blobs.map((blob: { url: string }) => blob.url);
       }
 
       const res = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, imageUrl }),
+        body: JSON.stringify({ text, imageUrls }),
       });
 
       if (!res.ok) {
@@ -95,7 +104,7 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
       const newPost = await res.json();
       onPostCreated(newPost);
       setText('');
-      handleClearImage();
+      clearAllImages();
       toast.success('Post created successfully!');
     } catch (error) {
       console.error(error);
@@ -117,26 +126,31 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
           rows={3}
           readOnly={!session}
         />
-        {imagePreview && (
-          <div className="mt-4 relative">
-            <Image src={imagePreview} alt="Image preview" width={200} height={200} className="rounded-md max-h-60 object-contain" />
-            <button
-              type="button"
-              onClick={handleClearImage}
-              className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 text-xs"
-              aria-label="Remove image"
-            >
-              &times;
-            </button>
+        {imagePreviews.length > 0 && (
+          <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+            {imagePreviews.map((preview, index) => (
+              <div key={index} className="relative">
+                <Image src={preview} alt={`Image preview ${index + 1}`} width={100} height={100} className="rounded-md w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveImage(index)}
+                  className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 leading-none"
+                  aria-label={`Remove image ${index + 1}`}
+                >
+                  <span className="text-sm">&times;</span>
+                </button>
+              </div>
+            ))}
           </div>
         )}
         <div className="flex items-center justify-between mt-4">
           <label htmlFor="image-upload" onClick={handleClick} className="cursor-pointer bg-border-line text-primary-text py-2 px-4 rounded-md hover:bg-secondary-text">
-            Add Image
+            Add Images
             <input
               id="image-upload"
               type="file"
               accept="image/*"
+              multiple
               onChange={handleImageChange}
               className="hidden"
               disabled={isSubmitting}
@@ -144,7 +158,7 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
           </label>
           <button
             type="submit"
-            disabled={isSubmitting || (!text.trim() && !imageFile)}
+            disabled={isSubmitting || (!text.trim() && imageFiles.length === 0)}
             className="bg-secondary-text text-secondary-bg py-2 px-4 rounded-md hover:bg-primary-text disabled:bg-border-line"
           >
             {isSubmitting ? 'Posting...' : 'Post'}

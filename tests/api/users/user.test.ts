@@ -16,7 +16,7 @@ describe('GET /api/users/[userId]', () => {
       updatedAt: new Date(),
       _count: { followers: 0, following: 0 },
     };
-    prismaMock.user.findUnique.mockResolvedValue(mockUser);
+    prismaMock.user.findUnique.mockResolvedValue(mockUser as any);
 
     const req = {} as NextRequest;
     const params = { userId: '1' };
@@ -35,6 +35,14 @@ describe('GET /api/users/[userId]', () => {
         _count: {
           select: { followers: true, following: true },
         },
+        posts: {
+          orderBy: { createdAt: 'desc' },
+          include: {
+            author: true,
+            comments: true,
+            postLikes: true,
+          },
+        },
       },
     });
   });
@@ -48,7 +56,7 @@ describe('GET /api/users/[userId]', () => {
     const data = await response.json();
 
     expect(response.status).toBe(500);
-    expect(data).toEqual({ error: "Something went wrong" });
+    expect(data).toEqual({ message: "Something went wrong" });
   });
 
   it('should return 404 if user not found', async () => {
@@ -60,7 +68,7 @@ describe('GET /api/users/[userId]', () => {
     const data = await response.json();
 
     expect(response.status).toBe(404);
-    expect(data).toEqual({ error: 'User not found' });
+    expect(data).toEqual({ message: 'User not found' });
   });
 
   it('should return 400 for invalid user ID', async () => {
@@ -70,7 +78,7 @@ describe('GET /api/users/[userId]', () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data).toEqual({ error: 'Invalid user ID' });
+    expect(data).toEqual({ message: 'Invalid user ID' });
   });
 });
 
@@ -89,7 +97,6 @@ describe('PUT /api/users/[userId]', () => {
       email: 'test@example.com',
       password: null,
       image: 'updated.jpg',
-      guest: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -120,7 +127,7 @@ describe('PUT /api/users/[userId]', () => {
     const data = await response.json();
 
     expect(response.status).toBe(403);
-    expect(data).toEqual({ error: 'Forbidden' });
+    expect(data).toEqual({ message: 'Forbidden' });
   });
 
   it('should return 401 if unauthorized', async () => {
@@ -132,7 +139,7 @@ describe('PUT /api/users/[userId]', () => {
     const data = await response.json();
 
     expect(response.status).toBe(401);
-    expect(data).toEqual({ error: 'Unauthorized' });
+    expect(data).toEqual({ message: 'Unauthorized' });
   });
 
   it('should return 400 for invalid name', async () => {
@@ -142,7 +149,7 @@ describe('PUT /api/users/[userId]', () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data).toEqual({ error: 'Invalid name' });
+    expect(data).toEqual({ message: 'Invalid name' });
   });
 
   it('should return 400 for invalid user ID', async () => {
@@ -152,6 +159,7 @@ describe('PUT /api/users/[userId]', () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data).toEqual({ error: 'Invalid user ID' });
+    expect(data).toEqual({ message: 'Invalid user ID' });
   });
 });
+

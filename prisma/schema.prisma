@@ -84,26 +84,16 @@ model Post {
   id         Int       @id @default(autoincrement())
   authorId   Int
   text       String?
-  imageUrl   String?   // 新增的圖片 URL 欄位
+  imageUrls  String[]  // 支援多張圖片 URL
   createdAt  DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt  DateTime  @updatedAt
 
   author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  // images     Image[]   // 暫時註解掉，未來可擴展為多圖
   comments   Comment[]
   postLikes  PostLike[]
 }
 
-// 貼文圖片 (暫時未使用)
-/*
-model Image {
-  id       Int    @id @default(autoincrement())
-  postId   Int
-  url      String
-  order    Int    @default(0)   // 圖片順序
-  post     Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
-}
-*/
+
 
 enum ReactionType {
   LIKE

@@ -1,18 +1,22 @@
-// @ts-nocheck
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+interface CommentContext {
+  params: {
+    commentId: string;
+  };
+}
+
 // PUT /api/comments/[commentId] - Update a comment
 export async function PUT(
   req: NextRequest,
-  context: any
+  context: CommentContext
 ) {
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
-  const { commentId: commentIdString } = await context.params;
+  const { commentId: commentIdString } = context.params;
   const commentId = parseInt(commentIdString, 10);
 
   if (isNaN(commentId)) {
@@ -50,11 +54,11 @@ export async function PUT(
 // DELETE /api/comments/[commentId] - Delete a comment
 export async function DELETE(
   req: NextRequest,
-  context: any
+  context: CommentContext
 ) {
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
-  const { commentId: commentIdString } = await context.params;
+  const { commentId: commentIdString } = context.params;
   const commentId = parseInt(commentIdString, 10);
 
   if (isNaN(commentId)) {

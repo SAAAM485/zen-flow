@@ -1,15 +1,19 @@
-// @ts-nocheck
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { FollowRequestStatus } from "@prisma/client";
 
+interface RequestContext {
+  params: {
+    requestId: string;
+  };
+}
+
 // PUT /api/follow-requests/[requestId] - Accept or decline a follow request
 export async function PUT(
   req: NextRequest,
-  context: any
+  context: RequestContext
 ) {
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
@@ -18,7 +22,7 @@ export async function PUT(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { requestId: requestIdString } = await context.params;
+  const { requestId: requestIdString } = context.params;
   const requestId = parseInt(requestIdString, 10);
   if (isNaN(requestId)) {
     return NextResponse.json({ error: "Invalid request ID" }, { status: 400 });

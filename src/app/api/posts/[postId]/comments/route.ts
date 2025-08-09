@@ -1,21 +1,25 @@
-// @ts-nocheck
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+interface CommentsContext {
+  params: {
+    postId: string;
+  };
+}
+
 // POST /api/posts/[postId]/comments - Create a new comment on a post
 export async function POST(
   req: NextRequest,
-  context: any
+  context: CommentsContext
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { postId: postIdString } = await context.params;
+  const { postId: postIdString } = context.params;
   const postId = parseInt(postIdString, 10);
   if (isNaN(postId)) {
     return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });

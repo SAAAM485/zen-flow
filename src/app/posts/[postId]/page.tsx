@@ -154,7 +154,7 @@ export default function SinglePostPage({
             const res = await fetch(`/api/posts/${id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ text: editText }),
+                body: JSON.stringify({ text: editText, imageUrls: post.imageUrls }),
             });
             if (!res.ok) throw new Error("Failed to update post");
             const updatedPost = await res.json();
@@ -260,15 +260,20 @@ export default function SinglePostPage({
                                 {post.text}
                             </p>
                         )}
-                        {post.imageUrl && (
+                        {post.imageUrls && post.imageUrls.length > 0 && (
                             <div className="mb-4">
-                                <Image
-                                    src={post.imageUrl}
-                                    alt="Post image"
-                                    width={500}
-                                    height={300}
-                                    className="rounded-md object-cover w-full"
-                                />
+                                <div className={`grid gap-2 ${post.imageUrls.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                                    {post.imageUrls.map((url, index) => (
+                                        <div key={index} className="relative aspect-video bg-secondary-bg">
+                                            <Image
+                                                src={url}
+                                                alt={`Post image ${index + 1}`}
+                                                fill
+                                                className="object-contain md:rounded-md"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </>

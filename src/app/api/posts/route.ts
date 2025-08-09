@@ -47,19 +47,36 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { text } = body;
+    const { text, imageUrls } = body;
 
-    if (!text || typeof text !== 'string' || text.trim().length === 0) {
-      return NextResponse.json({ error: "Text content is required" }, { status: 400 });
+    // Validate input: must have text or at least one image URL
+    if ((!text || typeof text !== 'string' || text.trim().length === 0) && (!imageUrls || !Array.isArray(imageUrls) || imageUrls.length === 0)) {
+      return NextResponse.json({ error: "Post content or an image is required" }, { status: 400 });
     }
 
     const newPost = await prisma.post.create({
       data: {
-        text: text,
+        text: text || null,
+        imageUrls: imageUrls || [],
         authorId: session.user.id,
       },
-      include: { // Include author details in the response
+      include: { // Ensure the returned post has the same shape as feed posts
         author: true,
+        comments: {
+          include: {
+            author: true,
+            commentLikes: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        },
+        postLikes: {
+          include: {
+            user: true,
+          },
+        },
       },
     });
 
