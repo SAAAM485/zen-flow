@@ -46,12 +46,12 @@ model Account {
   provider          String
   type              String // Added for NextAuth Account model
   providerAccountId String
-  accessToken       String?
-  refreshToken      String?
-  expiresAt         Int?
-  tokenType         String?
+  access_token      String?
+  refresh_token     String?
+  expires_at        Int?
+  token_type        String?
   scope             String?
-  idToken           String?
+  id_token          String?
   userId            Int
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
