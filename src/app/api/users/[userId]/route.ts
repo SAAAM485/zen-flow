@@ -96,6 +96,23 @@ export async function PUT(
         id: true,
         name: true,
         image: true,
+        createdAt: true,
+        _count: {
+          select: { 
+            followers: true, 
+            following: true 
+          }
+        },
+        posts: {
+          include: {
+            author: true,
+            postLikes: true,
+            comments: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
       }
     });
 

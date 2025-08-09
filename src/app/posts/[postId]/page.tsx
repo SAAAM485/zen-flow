@@ -103,12 +103,78 @@ export default function SinglePostPage({
         }
     };
 
-    const handleReaction = async () => {
-        if (!session) {
+    const handleReaction = async (type: ReactionType) => {
+        if (!session?.user?.id) {
             setShowLoginPrompt(true);
             return;
         }
-        console.log("Reaction clicked");
+
+        if (!post) return;
+
+        const currentUserReaction = post.postLikes.find(
+            (like) => like.userId === session.user.id
+        );
+
+        const originalPost = JSON.parse(JSON.stringify(post)); // Deep copy for rollback
+
+        // Optimistic update
+        if (currentUserReaction && currentUserReaction.type === type) {
+            // User is un-reacting
+            setPost((prev) =>
+                prev
+                    ? {
+                          ...prev,
+                          postLikes: prev.postLikes.filter(
+                              (like) => like.userId !== session.user.id
+                          ),
+                      }
+                    : null
+            );
+        } else {
+            // User is reacting or changing reaction
+            const newLike = {
+                userId: session.user.id,
+                type,
+                id: Math.random(),
+                postId: post.id,
+                createdAt: new Date(),
+            };
+            setPost((prev) =>
+                prev
+                    ? {
+                          ...prev,
+                          postLikes: [
+                              ...prev.postLikes.filter(
+                                  (like) => like.userId !== session.user.id
+                              ),
+                              newLike as any,
+                          ],
+                      }
+                    : null
+            );
+        }
+
+        try {
+            if (currentUserReaction && currentUserReaction.type === type) {
+                // Un-react
+                const res = await fetch(`/api/posts/${post.id}/reactions`, {
+                    method: "DELETE",
+                });
+                if (!res.ok) throw new Error("Failed to remove reaction");
+            } else {
+                // Add or change reaction
+                const res = await fetch(`/api/posts/${post.id}/reactions`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ type }),
+                });
+                if (!res.ok) throw new Error("Failed to add reaction");
+            }
+        } catch (error) {
+            console.error("Error handling reaction:", error);
+            toast.error("Failed to update reaction");
+            setPost(originalPost);
+        }
     };
 
     const openDeleteModal = (id: number) => {
@@ -130,7 +196,6 @@ export default function SinglePostPage({
             });
             if (!res.ok) throw new Error("Failed to delete post");
             toast.success("Post deleted successfully!");
-            // Redirect to home or previous page after deletion
             window.location.href = "/";
         } catch (error) {
             console.error("Error deleting post:", error);
@@ -146,8 +211,9 @@ export default function SinglePostPage({
     };
 
     const handleSaveEdit = async (id: number) => {
-        if (!editText.trim()) {
-            toast.error("Post content cannot be empty.");
+        if (!post) return;
+        if (!editText.trim() && (!post.imageUrls || post.imageUrls.length === 0)) {
+            toast.error("Post content or an image is required.");
             return;
         }
         try {
@@ -188,6 +254,8 @@ export default function SinglePostPage({
     if (!post) {
         return <div className="text-center p-10">Post not found.</div>;
     }
+
+    const currentUserReactionType = post.postLikes.find(like => like.userId === currentUser?.id)?.type;
 
     return (
         <div className="max-w-2xl mx-auto p-4">
@@ -282,16 +350,14 @@ export default function SinglePostPage({
                     {Object.values(ReactionType).map((type) => (
                         <button
                             key={type}
-                            onClick={handleReaction}
-                            className="px-3 py-1 rounded-full border border-border-line bg-secondary-bg text-primary-text hover:bg-primary-text hover:text-secondary-bg"
+                            onClick={() => handleReaction(type)}
+                            className={`px-3 py-1 rounded-full border text-sm text-primary-text hover:bg-primary-text hover:text-secondary-bg transition-colors ${
+                                currentUserReactionType === type
+                                    ? "bg-primary-text text-secondary-bg border-primary-text"
+                                    : "bg-secondary-bg border-border-line"
+                            }`}
                         >
-                            {type} (
-                            {
-                                post.postLikes.filter(
-                                    (like) => like.type === type
-                                ).length
-                            }
-                            )
+                            {type} {post.postLikes.filter((like) => like.type === type).length}
                         </button>
                     ))}
                 </div>

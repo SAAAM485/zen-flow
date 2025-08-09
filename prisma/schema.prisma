@@ -15,16 +15,17 @@ enum FollowRequestStatus {
 
 // 使用者資料表
 model User {
-  id          Int               @id @default(autoincrement())
-  name        String
-  email       String?           @unique
-  password    String?           // null 代表透過 OAuth 或 guest
-  image       String?           // 頭像 URL
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  id            Int       @id @default(autoincrement())
+  name          String
+  email         String?   @unique
+  emailVerified DateTime? // Email 驗證時間
+  password      String? // null 代表透過 OAuth 或 guest
+  image         String? // 頭像 URL
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   // OAuth 帳號
-  accounts    OAuthAccount[]
+  accounts Account[]
 
   // 追蹤
   sentRequests     FollowRequest[] @relation("sentRequests")
@@ -40,28 +41,33 @@ model User {
 }
 
 // 第三方登入帳號
-model OAuthAccount {
-  id                 Int      @id @default(autoincrement())
-  provider           String
-  providerAccountId  String
-  accessToken        String?
-  refreshToken       String?
-  userId             Int
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Account {
+  id                Int     @id @default(autoincrement())
+  provider          String
+  type              String // Added for NextAuth Account model
+  providerAccountId String
+  accessToken       String?
+  refreshToken      String?
+  expiresAt         Int?
+  tokenType         String?
+  scope             String?
+  idToken           String?
+  userId            Int
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
 
 // 追蹤請求
 model FollowRequest {
-  id         Int                  @id @default(autoincrement())
-  fromId     Int
-  toId       Int
-  status     FollowRequestStatus @default(PENDING)
-  createdAt  DateTime             @default(now())
+  id        Int                 @id @default(autoincrement())
+  fromId    Int
+  toId      Int
+  status    FollowRequestStatus @default(PENDING)
+  createdAt DateTime            @default(now())
 
-  from       User @relation("sentRequests", fields: [fromId], references: [id], onDelete: Cascade)
-  to         User @relation("receivedRequests", fields: [toId],   references: [id], onDelete: Cascade)
+  from User @relation("sentRequests", fields: [fromId], references: [id], onDelete: Cascade)
+  to   User @relation("receivedRequests", fields: [toId], references: [id], onDelete: Cascade)
 
   @@unique([fromId, toId])
 }
@@ -73,27 +79,25 @@ model Follow {
   followingId Int
   createdAt   DateTime @default(now())
 
-  follower    User @relation("userFollowing", fields: [followerId],  references: [id], onDelete: Cascade)
-  following   User @relation("userFollowers",  fields: [followingId], references: [id], onDelete: Cascade)
+  follower  User @relation("userFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("userFollowers", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@unique([followerId, followingId])
 }
 
 // 帖文
 model Post {
-  id         Int       @id @default(autoincrement())
-  authorId   Int
-  text       String?
-  imageUrls  String[]  // 支援多張圖片 URL
-  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
-  updatedAt  DateTime  @updatedAt
+  id        Int      @id @default(autoincrement())
+  authorId  Int
+  text      String?
+  imageUrls String[] // 支援多張圖片 URL
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt
 
-  author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  comments   Comment[]
-  postLikes  PostLike[]
+  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments  Comment[]
+  postLikes PostLike[]
 }
-
-
 
 enum ReactionType {
   LIKE
@@ -104,16 +108,16 @@ enum ReactionType {
 
 // 留言
 model Comment {
-  id            Int       @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   postId        Int
   authorId      Int
   text          String
-  isHighlighted Boolean   @default(false) // 由作者標記為優質留言
-  createdAt     DateTime  @default(now())
+  isHighlighted Boolean  @default(false) // 由作者標記為優質留言
+  createdAt     DateTime @default(now())
 
-  post          Post      @relation(fields: [postId],   references: [id], onDelete: Cascade)
-  author        User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  commentLikes  CommentLike[]
+  post         Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author       User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  commentLikes CommentLike[]
 }
 
 // 文章按讚
@@ -124,8 +128,8 @@ model PostLike {
   type      ReactionType @default(LIKE)
   createdAt DateTime     @default(now())
 
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post      Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
 }
@@ -138,8 +142,8 @@ model CommentLike {
   type      ReactionType @default(LIKE)
   createdAt DateTime     @default(now())
 
-  user      User    @relation(fields: [userId],    references: [id], onDelete: Cascade)
-  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
   @@unique([userId, commentId])
 }

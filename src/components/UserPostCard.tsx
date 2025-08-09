@@ -1,14 +1,100 @@
 "use client";
 
+import { useState, useContext } from 'react';
 import Image from "next/image";
 import Link from "next/link";
 import { PostWithRelations } from "@/types/prisma";
+import { useSession } from 'next-auth/react';
+import { ReactionType } from '@prisma/client';
+import { toast } from 'sonner';
+import { LoginPromptContext } from '@/context/LoginPromptContext';
+import ConfirmModal from './ConfirmModal';
 
 interface UserPostCardProps {
     post: PostWithRelations;
+    onPostUpdate: (updatedPost: PostWithRelations) => void;
+    onPostDeleted: (postId: number) => void;
 }
 
-export default function UserPostCard({ post }: UserPostCardProps) {
+export default function UserPostCard({ post, onPostUpdate, onPostDeleted }: UserPostCardProps) {
+    const { data: session } = useSession();
+    const { setShowLoginPrompt } = useContext(LoginPromptContext);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleReaction = async (type: ReactionType) => {
+        if (!session?.user?.id) {
+            setShowLoginPrompt(true);
+            return;
+        }
+
+        const currentUserReaction = post.postLikes.find(
+            (like) => like.userId === session.user.id
+        );
+
+        const originalPost = JSON.parse(JSON.stringify(post)); // Deep copy
+
+        // Optimistic update
+        let updatedPost;
+        if (currentUserReaction && currentUserReaction.type === type) {
+            // User is un-reacting
+            updatedPost = {
+                ...post,
+                postLikes: post.postLikes.filter(
+                    (like) => like.userId !== session.user.id
+                ),
+            };
+        } else {
+            // User is reacting or changing reaction
+            const newLike = {
+                userId: session.user.id,
+                type,
+                id: Math.random(),
+                postId: post.id,
+                createdAt: new Date(),
+            };
+            updatedPost = {
+                ...post,
+                postLikes: [
+                    ...post.postLikes.filter(
+                        (like) => like.userId !== session.user.id
+                    ),
+                    newLike,
+                ],
+            };
+        }
+        onPostUpdate(updatedPost);
+
+        try {
+            if (currentUserReaction && currentUserReaction.type === type) {
+                await fetch(`/api/posts/${post.id}/reactions`, { method: "DELETE" });
+            } else {
+                await fetch(`/api/posts/${post.id}/reactions`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ type }),
+                });
+            }
+        } catch (error) {
+            console.error("Error handling reaction:", error);
+            toast.error("Failed to update reaction");
+            onPostUpdate(originalPost); // Revert on failure
+        }
+    };
+
+    const handleDelete = async () => {
+        try {
+            const res = await fetch(`/api/posts/${post.id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Failed to delete');
+            toast.success('Post deleted');
+            onPostDeleted(post.id);
+        } catch (error) {
+            toast.error('Failed to delete post');
+        }
+        setIsModalOpen(false);
+    };
+
+    const currentUserReactionType = post.postLikes.find(like => like.userId === session?.user?.id)?.type;
+
     return (
         <div
             key={post.id}
@@ -35,6 +121,11 @@ export default function UserPostCard({ post }: UserPostCardProps) {
                         </p>
                     </div>
                 </Link>
+                {session?.user?.id === post.authorId && (
+                    <div className="ml-auto">
+                        <button onClick={() => setIsModalOpen(true)} className='text-red-500 hover:text-red-700'>Delete</button>
+                    </div>
+                )}
             </div>
             <Link href={`/posts/${post.id}`}>
                 <div className="cursor-pointer">
@@ -59,6 +150,28 @@ export default function UserPostCard({ post }: UserPostCardProps) {
                     )}
                 </div>
             </Link>
+             <div className="flex items-center space-x-4 mb-4">
+                {Object.values(ReactionType).map((type) => (
+                    <button
+                        key={type}
+                        onClick={() => handleReaction(type)}
+                        className={`px-3 py-1 rounded-full border text-sm text-primary-text hover:bg-primary-text hover:text-secondary-bg transition-colors ${
+                            currentUserReactionType === type
+                                ? "bg-primary-text text-secondary-bg border-primary-text"
+                                : "bg-secondary-bg border-border-line"
+                        }`}
+                    >
+                        {type} {post.postLikes.filter((like) => like.type === type).length}
+                    </button>
+                ))}
+            </div>
+            <ConfirmModal 
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onConfirm={handleDelete}
+                title="Delete Post"
+                description="Are you sure you want to delete this post? This cannot be undone."
+            />
         </div>
     );
 }

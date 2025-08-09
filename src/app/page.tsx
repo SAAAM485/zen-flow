@@ -1,5 +1,5 @@
-import { prisma } from '@/lib/prisma';
-import PostList from '@/components/PostList';
+import PostList from "@/components/PostList";
+import { prisma } from "@/lib/prisma";
 
 async function getPosts() {
   const posts = await prisma.post.findMany({
@@ -8,28 +8,13 @@ async function getPosts() {
       comments: {
         include: {
           author: true,
-          commentLikes: {
-            include: {
-              user: {
-                select: { id: true },
-              },
-            },
-          },
-        },
-        orderBy: {
-          createdAt: 'asc',
+          commentLikes: true,
         },
       },
-      postLikes: {
-        include: {
-          user: {
-            select: { id: true },
-          },
-        },
-      },
+      postLikes: true,
     },
     orderBy: {
-      createdAt: 'desc',
+      createdAt: "desc",
     },
   });
   return posts;
@@ -39,9 +24,8 @@ export default async function Home() {
   const posts = await getPosts();
 
   return (
-    <div className="container mx-auto p-4">
-      
+    <main className="max-w-2xl mx-auto p-4">
       <PostList initialPosts={posts} />
-    </div>
+    </main>
   );
 }

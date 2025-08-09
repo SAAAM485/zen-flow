@@ -13,7 +13,7 @@ async function main() {
   await prisma.post.deleteMany();
   await prisma.follow.deleteMany();
   await prisma.followRequest.deleteMany();
-  await prisma.oAuthAccount.deleteMany();
+  await prisma.account.deleteMany();
   await prisma.user.deleteMany();
 
   // 創建使用者
