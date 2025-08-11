@@ -1,13 +1,16 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
   preset: 'ts-jest',
-  globals: {
-    'ts-jest': {
-      tsconfig: 'tsconfig.jest.json',
-    },
-  },
   testEnvironment: 'node',
-  testMatch: ["<rootDir>/tests/**/*.test.ts"],
+  transform: {
+    '^.+\.tsx?$': [
+      'ts-jest',
+      {
+        tsconfig: 'tsconfig.jest.json',
+      },
+    ],
+  },
+  testMatch: ["<rootDir>/tests/**/*.test.{ts,tsx}"],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@/tests/(.*)$': '<rootDir>/tests/$1',
