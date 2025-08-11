@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { ReactionType } from "@prisma/client";
+import { authOptions } from "@/lib/auth";
 
 interface ReactionsContext {
   params: {
@@ -14,7 +15,7 @@ export async function POST(
     req: NextRequest,
     context: ReactionsContext
 ) {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -66,7 +67,7 @@ export async function DELETE(
     req: NextRequest,
     context: ReactionsContext
 ) {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
