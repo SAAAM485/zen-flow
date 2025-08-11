@@ -1,16 +1,21 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PostWithRelations } from "@/types/prisma";
 import UserPostCard from "./UserPostCard";
 import CreatePostForm from './CreatePostForm';
 
 interface PostListProps {
   initialPosts: PostWithRelations[];
+  showInteractions?: boolean;
 }
 
-export default function PostList({ initialPosts }: PostListProps) {
+export default function PostList({ initialPosts, showInteractions = true }: PostListProps) {
   const [posts, setPosts] = useState<PostWithRelations[]>(initialPosts);
+
+  useEffect(() => {
+    setPosts(initialPosts); // Update posts state when initialPosts prop changes
+  }, [initialPosts]);
 
   const handlePostCreated = (newPost: PostWithRelations) => {
     setPosts((prevPosts) => [newPost, ...prevPosts]);
@@ -36,7 +41,8 @@ export default function PostList({ initialPosts }: PostListProps) {
           key={post.id} 
           post={post} 
           onPostUpdate={handlePostUpdate} 
-          onPostDeleted={handlePostDeleted} 
+          onPostDeleted={handlePostDeleted}
+          showInteractions={showInteractions}
         />
       ))}
     </div>

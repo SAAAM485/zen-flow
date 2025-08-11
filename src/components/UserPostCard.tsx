@@ -14,9 +14,10 @@ interface UserPostCardProps {
     post: PostWithRelations;
     onPostUpdate: (updatedPost: PostWithRelations) => void;
     onPostDeleted: (postId: number) => void;
+    showInteractions?: boolean; // Make this optional, default to true
 }
 
-export default function UserPostCard({ post, onPostUpdate, onPostDeleted }: UserPostCardProps) {
+export default function UserPostCard({ post, onPostUpdate, onPostDeleted, showInteractions = true }: UserPostCardProps) {
     const { data: session } = useSession();
     const { setShowLoginPrompt } = useContext(LoginPromptContext);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,9 +49,10 @@ export default function UserPostCard({ post, onPostUpdate, onPostDeleted }: User
             const newLike = {
                 userId: session.user.id,
                 type,
-                id: Math.random(),
+                id: Math.random(), // Temporary ID for optimistic update
                 postId: post.id,
                 createdAt: new Date(),
+                user: { id: session.user.id }, // Add the user object to match the type
             };
             updatedPost = {
                 ...post,
@@ -150,21 +152,23 @@ export default function UserPostCard({ post, onPostUpdate, onPostDeleted }: User
                     )}
                 </div>
             </Link>
-             <div className="flex items-center space-x-4 mb-4">
-                {Object.values(ReactionType).map((type) => (
-                    <button
-                        key={type}
-                        onClick={() => handleReaction(type)}
-                        className={`px-3 py-1 rounded-full border text-sm text-primary-text hover:bg-primary-text hover:text-secondary-bg transition-colors ${
-                            currentUserReactionType === type
-                                ? "bg-primary-text text-secondary-bg border-primary-text"
-                                : "bg-secondary-bg border-border-line"
-                        }`}
-                    >
-                        {type} {post.postLikes.filter((like) => like.type === type).length}
-                    </button>
-                ))}
-            </div>
+            {showInteractions && (
+                 <div className="flex items-center space-x-4 mb-4">
+                    {Object.values(ReactionType).map((type) => (
+                        <button
+                            key={type}
+                            onClick={() => handleReaction(type)}
+                            className={`px-3 py-1 rounded-full border text-sm text-primary-text hover:bg-primary-text hover:text-secondary-bg transition-colors ${
+                                currentUserReactionType === type
+                                    ? "bg-primary-text text-secondary-bg border-primary-text"
+                                    : "bg-secondary-bg border-border-line"
+                            }`}
+                        >
+                            {type} {post.postLikes.filter((like) => like.type === type).length}
+                        </button>
+                    ))}
+                </div>
+            )}
             <ConfirmModal 
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}

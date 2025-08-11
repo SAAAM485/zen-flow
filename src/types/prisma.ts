@@ -11,3 +11,11 @@ export type PostWithRelations = Post & {
   comments: (CommentWithAuthor & { commentLikes: (CommentLike & { user: { id: number } })[] })[];
   postLikes: (PostLike & { user: { id: number } })[];
 };
+
+export type UserProfile = User & {
+    _count: {
+        followers: number;
+        following: number;
+    };
+    posts: PostWithRelations[];
+};

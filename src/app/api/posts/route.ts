@@ -5,9 +5,42 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 // GET /api/posts - Fetch all posts for the feed
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  const currentUserId = session?.user?.id;
+
+  const url = new URL(req.url);
+  const mode = url.searchParams.get("mode");
+
+  let whereClause = {};
+
+  // If in "following" mode and a user is logged in, filter posts
+  if (mode === 'following' && currentUserId) {
+    const following = await prisma.follow.findMany({
+      where: { followerId: currentUserId },
+      select: { followingId: true },
+    });
+    const followingIds = following.map((f) => f.followingId);
+
+    whereClause = {
+      authorId: {
+        in: followingIds,
+      },
+    };
+  } else if (mode === 'explore' && currentUserId) {
+    // For logged-in users in explore mode, show posts from everyone else
+    whereClause = {
+      authorId: {
+        not: currentUserId,
+      },
+    };
+  }
+  // For guests, mode is implicitly 'explore' and currentUserId is null,
+  // so whereClause remains {} and all posts are fetched.
+
   try {
     const posts = await prisma.post.findMany({
+      where: whereClause,
       orderBy: {
         createdAt: 'desc',
       },
