@@ -24,7 +24,14 @@ export const authOptions: AuthOptions = {
   callbacks: {
     session: ({ session, token }: { session: Session; token: JWT }): Session => {
       if (session?.user) {
-        session.user.id = token.id;
+        // Explicitly assign and return the id
+        return {
+          ...session,
+          user: {
+            ...session.user,
+            id: token.id as number, // Ensure it's a number
+          },
+        };
       }
       return session;
     },

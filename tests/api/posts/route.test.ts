@@ -24,7 +24,8 @@ describe("GET /api/posts", () => {
     ];
     prismaMock.post.findMany.mockResolvedValue(mockPosts as any);
 
-    const response = await GET();
+    const req = { url: 'http://localhost/api/posts' } as NextRequest;
+    const response = await GET(req);
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -32,6 +33,7 @@ describe("GET /api/posts", () => {
     expect(data[0].id).toBe(2); // Verify the order is descending
     expect(data[1].id).toBe(1);
     expect(prismaMock.post.findMany).toHaveBeenCalledWith({
+      where: {},
       orderBy: {
         createdAt: "desc",
       },
@@ -59,7 +61,8 @@ describe("GET /api/posts", () => {
   it("should return 500 if an internal server error occurs", async () => {
     prismaMock.post.findMany.mockRejectedValue(new Error("Database error"));
 
-    const response = await GET();
+    const req = { url: 'http://localhost/api/posts' } as NextRequest;
+    const response = await GET(req);
     const data = await response.json();
 
     expect(response.status).toBe(500);

@@ -4,6 +4,7 @@
     "types": ["jest", "node"],
     "esModuleInterop": true,
     "allowJs": true,
+    "jsx": "react-jsx",
     "isolatedModules": false,
     "baseUrl": ".",
     "paths": {

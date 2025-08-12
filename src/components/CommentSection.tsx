@@ -118,11 +118,32 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post, onCommentCreated,
     setEditCommentText('');
   };
 
+  const handleToggleHighlight = async (comment: CommentWithAuthor) => {
+    const method = comment.isHighlighted ? 'DELETE' : 'POST';
+    const actionText = comment.isHighlighted ? 'Unhighlighted' : 'Highlighted';
+    try {
+      const res = await fetch(`/api/comments/${comment.id}/highlight`, {
+        method,
+      });
+      if (!res.ok) {
+        const errorData = await res.json(); // Try to parse as JSON
+        console.error(`Server error during ${actionText.toLowerCase()} comment:`, errorData);
+        throw new Error(`Failed to ${actionText.toLowerCase()} comment: ${errorData.error || res.statusText}`);
+      }
+      const updatedComment = await res.json();
+      onCommentUpdated(post.id, updatedComment);
+      toast.success(`Comment ${actionText.toLowerCase()}!`);
+    } catch (error) {
+      console.error(`Error ${actionText.toLowerCase()} comment:`, error);
+      toast.error(`Error ${actionText.toLowerCase()} comment`);
+    }
+  };
+
   return (
     <div className="mt-4 pt-4 border-t border-border-line">
       <h3 className="font-semibold mb-2">Comments</h3>
       {post.comments.map(comment => (
-        <div key={comment.id} className={`ml-4 p-3 rounded-lg ${comment.isHighlighted ? 'bg-secondary-bg' : 'bg-secondary-bg'} mb-2`}>
+        <div key={comment.id} className={`ml-4 p-3 rounded-lg transition-colors duration-300 ${comment.isHighlighted ? 'bg-amber-100' : 'bg-secondary-bg'} mb-2`}>
           <div className="flex items-start">
             <Link href={`/profile/${comment.author.id}`} className="flex items-center mr-3">
               <Image src={comment.author.image ?? '/default-avatar.png'} alt={comment.author.name ?? 'User'} width={32} height={32} className="w-8 h-8 rounded-full" />
@@ -171,6 +192,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post, onCommentCreated,
                     >
                       Delete
                     </button>
+                    {currentUser?.id === post.authorId && (
+                       <button
+                        onClick={() => handleToggleHighlight(comment)}
+                        className="text-secondary-text hover:text-primary-text text-xs"
+                       >
+                        {comment.isHighlighted ? 'Unhighlight' : 'Highlight'}
+                       </button>
+                    )}
                   </>
                 )}
                 {/* TODO: Add comment reaction buttons here */}
@@ -183,7 +212,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post, onCommentCreated,
         <input type="text" value={text} onChange={(e) => setText(e.target.value)} onClick={handleClick} placeholder="Write a comment..." className="w-full p-2 border border-border-line rounded-md" readOnly={!session} />
         <div className="text-right mt-1">
           <button type="submit" disabled={isSubmitting || !text.trim()} className="text-sm bg-secondary-text text-secondary-bg py-1 px-3 rounded-md hover:bg-primary-text disabled:bg-border-line">
-            {isSubmitting ? 'Replying...' : 'Reply'}
+            {isSubmitting ? 'Replying...' : 'Reply' }
           </button>
         </div>
       </form>

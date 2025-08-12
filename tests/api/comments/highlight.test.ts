@@ -1,11 +1,11 @@
 import { POST, DELETE } from "@/app/api/comments/[commentId]/highlight/route";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt"; // Import getToken
 
-// Mock next-auth
-jest.mock("next-auth", () => ({
-  getServerSession: jest.fn(),
+// Mock next-auth/jwt
+jest.mock("next-auth/jwt", () => ({
+  getToken: jest.fn(),
 }));
 
 // Mock prisma
@@ -19,7 +19,7 @@ jest.mock("@/lib/prisma", () => ({
 }));
 
 describe("POST /api/comments/[commentId]/highlight", () => {
-  const MOCK_USER_ID = "test-user-id";
+  const MOCK_USER_ID = 1;
   const MOCK_POST_AUTHOR_ID = MOCK_USER_ID; // For successful cases, user is post author
   const MOCK_COMMENT_ID = 1;
   const MOCK_POST_ID = 101;
@@ -29,9 +29,7 @@ describe("POST /api/comments/[commentId]/highlight", () => {
   });
 
   it("should highlight a comment successfully", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({
-      user: { id: MOCK_USER_ID },
-    });
+    (getToken as jest.Mock).mockResolvedValue({ id: MOCK_USER_ID });
     (prisma.comment.findUnique as jest.Mock).mockResolvedValue({
       id: MOCK_COMMENT_ID,
       authorId: "some-comment-author-id",
@@ -64,11 +62,12 @@ describe("POST /api/comments/[commentId]/highlight", () => {
     expect(prisma.comment.update).toHaveBeenCalledWith({
       where: { id: MOCK_COMMENT_ID },
       data: { isHighlighted: true },
+      include: { author: true },
     });
   });
 
   it("should return 401 if unauthorized (no session)", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue(null);
+    (getToken as jest.Mock).mockResolvedValue(null);
 
     const req = {} as NextRequest;
     const params = { commentId: MOCK_COMMENT_ID.toString() };
@@ -83,9 +82,7 @@ describe("POST /api/comments/[commentId]/highlight", () => {
   });
 
   it("should return 400 if invalid commentId", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({
-      user: { id: MOCK_USER_ID },
-    });
+    (getToken as jest.Mock).mockResolvedValue({ id: MOCK_USER_ID });
 
     const req = {} as NextRequest;
     const params = { commentId: "invalid" };
@@ -100,9 +97,7 @@ describe("POST /api/comments/[commentId]/highlight", () => {
   });
 
   it("should return 404 if comment not found", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({
-      user: { id: MOCK_USER_ID },
-    });
+    (getToken as jest.Mock).mockResolvedValue({ id: MOCK_USER_ID });
     (prisma.comment.findUnique as jest.Mock).mockResolvedValue(null);
 
     const req = {} as NextRequest;
@@ -118,9 +113,7 @@ describe("POST /api/comments/[commentId]/highlight", () => {
   });
 
   it("should return 403 if user is not the post author", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({
-      user: { id: "another-user-id" },
-    });
+    (getToken as jest.Mock).mockResolvedValue({ id: "another-user-id" });
     (prisma.comment.findUnique as jest.Mock).mockResolvedValue({
       id: MOCK_COMMENT_ID,
       authorId: "some-comment-author-id",
@@ -142,9 +135,7 @@ describe("POST /api/comments/[commentId]/highlight", () => {
   });
 
   it("should return 500 if an internal server error occurs", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({
-      user: { id: MOCK_USER_ID },
-    });
+    (getToken as jest.Mock).mockResolvedValue({ id: MOCK_USER_ID });
     (prisma.comment.findUnique as jest.Mock).mockResolvedValue({
       id: MOCK_COMMENT_ID,
       authorId: "some-comment-author-id",
@@ -169,7 +160,7 @@ describe("POST /api/comments/[commentId]/highlight", () => {
 });
 
 describe("DELETE /api/comments/[commentId]/highlight", () => {
-  const MOCK_USER_ID = "test-user-id";
+  const MOCK_USER_ID = 1;
   const MOCK_POST_AUTHOR_ID = MOCK_USER_ID; // For successful cases, user is post author
   const MOCK_COMMENT_ID = 1;
   const MOCK_POST_ID = 101;
@@ -179,9 +170,7 @@ describe("DELETE /api/comments/[commentId]/highlight", () => {
   });
 
   it("should unhighlight a comment successfully", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({
-      user: { id: MOCK_USER_ID },
-    });
+    (getToken as jest.Mock).mockResolvedValue({ id: MOCK_USER_ID });
     (prisma.comment.findUnique as jest.Mock).mockResolvedValue({
       id: MOCK_COMMENT_ID,
       authorId: "some-comment-author-id",
@@ -214,11 +203,12 @@ describe("DELETE /api/comments/[commentId]/highlight", () => {
     expect(prisma.comment.update).toHaveBeenCalledWith({
       where: { id: MOCK_COMMENT_ID },
       data: { isHighlighted: false },
+      include: { author: true },
     });
   });
 
   it("should return 401 if unauthorized (no session)", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue(null);
+    (getToken as jest.Mock).mockResolvedValue(null);
 
     const req = {} as NextRequest;
     const params = { commentId: MOCK_COMMENT_ID.toString() };
@@ -233,9 +223,7 @@ describe("DELETE /api/comments/[commentId]/highlight", () => {
   });
 
   it("should return 400 if invalid commentId", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({
-      user: { id: MOCK_USER_ID },
-    });
+    (getToken as jest.Mock).mockResolvedValue({ id: MOCK_USER_ID });
 
     const req = {} as NextRequest;
     const params = { commentId: "invalid" };
@@ -250,9 +238,7 @@ describe("DELETE /api/comments/[commentId]/highlight", () => {
   });
 
   it("should return 404 if comment not found", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({
-      user: { id: MOCK_USER_ID },
-    });
+    (getToken as jest.Mock).mockResolvedValue({ id: MOCK_USER_ID });
     (prisma.comment.findUnique as jest.Mock).mockResolvedValue(null);
 
     const req = {} as NextRequest;
@@ -268,9 +254,7 @@ describe("DELETE /api/comments/[commentId]/highlight", () => {
   });
 
   it("should return 403 if user is not the post author", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({
-      user: { id: "another-user-id" },
-    });
+    (getToken as jest.Mock).mockResolvedValue({ id: "another-user-id" });
     (prisma.comment.findUnique as jest.Mock).mockResolvedValue({
       id: MOCK_COMMENT_ID,
       authorId: "some-comment-author-id",
@@ -292,9 +276,7 @@ describe("DELETE /api/comments/[commentId]/highlight", () => {
   });
 
   it("should return 500 if an internal server error occurs", async () => {
-    (getServerSession as jest.Mock).mockResolvedValue({
-      user: { id: MOCK_USER_ID },
-    });
+    (getToken as jest.Mock).mockResolvedValue({ id: MOCK_USER_ID });
     (prisma.comment.findUnique as jest.Mock).mockResolvedValue({
       id: MOCK_COMMENT_ID,
       authorId: "some-comment-author-id",

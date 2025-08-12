@@ -58,12 +58,11 @@ export default function SinglePostPage({
         newComment: CommentWithAuthor
     ) => {
         if (post && newPostId === post.id) {
-            const commentWithLikes = { ...newComment, commentLikes: [] };
             setPost((prevPost) =>
                 prevPost
                     ? {
                           ...prevPost,
-                          comments: [...prevPost.comments, commentWithLikes],
+                          comments: [...prevPost.comments, newComment],
                       }
                     : null
             );
@@ -79,9 +78,16 @@ export default function SinglePostPage({
                 prevPost
                     ? {
                           ...prevPost,
-                          comments: prevPost.comments.map((c) =>
-                              c.id === updatedComment.id ? updatedComment : c
-                          ),
+                          comments: prevPost.comments
+                              .map((c) =>
+                                  c.id === updatedComment.id ? updatedComment : c
+                              )
+                              .sort((a, b) => {
+                                  // Sort by isHighlighted (descending) then createdAt (ascending)
+                                  if (a.isHighlighted && !b.isHighlighted) return -1;
+                                  if (!a.isHighlighted && b.isHighlighted) return 1;
+                                  return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                              }),
                       }
                     : null
             );

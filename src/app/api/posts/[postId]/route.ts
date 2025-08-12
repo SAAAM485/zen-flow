@@ -30,7 +30,7 @@ export async function GET(
             author: true,
             commentLikes: true,
           },
-          orderBy: { createdAt: "asc" },
+          orderBy: [{ isHighlighted: "desc" }, { createdAt: "asc" }],
         },
         postLikes: true,
       },

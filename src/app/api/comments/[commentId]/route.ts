@@ -41,6 +41,7 @@ export async function PUT(
     const updatedComment = await prisma.comment.update({
       where: { id: commentId },
       data: { text },
+      include: { author: true }, // Include author in the response
     });
 
     return NextResponse.json(updatedComment);
