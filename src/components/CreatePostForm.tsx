@@ -134,7 +134,7 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
                 <button
                   type="button"
                   onClick={() => handleRemoveImage(index)}
-                  className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 leading-none"
+                  className="absolute top-1 right-1 bg-primary-text text-primary-bg rounded-full p-1 leading-none"
                   aria-label={`Remove image ${index + 1}`}
                 >
                   <span className="text-sm">&times;</span>

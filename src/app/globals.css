@@ -1,13 +1,9 @@
 @import "tailwindcss";
 
-/* 移除 :root 和 @theme inline 的顏色變數定義，直接使用 Tailwind CSS */
-
-
-
-/* 移除深色模式的設定，如果需要，可以透過 Tailwind CSS 的 dark: 前綴來實現 */
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-} */
+@theme {
+    --color-primary-bg: #f5f5f5;
+    --color-secondary-bg: #ebebeb;
+    --color-primary-text: #3d3d3d;
+    --color-secondary-text: #474747;
+    --color-border-line: #525252;
+}

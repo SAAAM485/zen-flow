@@ -119,7 +119,7 @@ export default function ProfileView({
 
     return (
         <div className="container mx-auto p-4 max-w-2xl">
-            <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+            <div className="bg-secondary-bg shadow-md rounded-lg p-6 mb-6">
                 <div className="flex items-start">
                     <Image
                         src={imagePreview || imageUrl || profile.image || "/default-avatar.png"}
@@ -130,7 +130,7 @@ export default function ProfileView({
                     />
                     <div className="flex-grow">
                         <h2 className="text-2xl font-bold">{profile.name}</h2>
-                        <p className="text-gray-500">Joined on {new Date(profile.createdAt).toLocaleDateString()}</p>
+                        <p className="text-secondary-text">Joined on {new Date(profile.createdAt).toLocaleDateString()}</p>
                         <div className="flex space-x-4 mt-2">
                             <span><b>{profile._count.followers}</b> Followers</span>
                             <span><b>{profile._count.following}</b> Following</span>
@@ -148,33 +148,33 @@ export default function ProfileView({
             </div>
 
             {isCurrentUser && (
-                <div className="bg-white shadow-md rounded-lg p-6">
+                <div className="bg-secondary-bg shadow-md rounded-lg p-6">
                     <h2 className="text-2xl font-bold mb-4">Edit Profile</h2>
                     <form onSubmit={handleSubmit}>
                         <div className="mb-4">
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
+                            <label htmlFor="name" className="block text-sm font-medium text-primary-text">Name</label>
                             <input
                                 type="text"
                                 id="name"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                className="mt-1 block w-full px-3 py-2 border border-border-line rounded-md shadow-sm focus:outline-none focus:ring-border-line focus:border-border-line sm:text-sm"
                             />
                         </div>
                         <div className="mb-4">
-                            <label htmlFor="image-upload" className="block text-sm font-medium text-gray-700">Profile Image</label>
+                            <label htmlFor="image-upload" className="block text-sm font-medium text-primary-text">Profile Image</label>
                             <input
                                 type="file"
                                 id="image-upload"
                                 accept="image/*"
                                 onChange={handleFileChange}
-                                className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                className="mt-1 block w-full text-sm text-secondary-text file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-secondary-bg file:text-primary-text hover:file:bg-primary-bg"
                             />
                             {(imagePreview || imageUrl) && (
-                                <button type="button" onClick={handleClearImage} className="mt-2 text-red-600 hover:text-red-800 text-sm">Clear Image</button>
+                                <button type="button" onClick={handleClearImage} className="mt-2 text-secondary-text hover:text-primary-text text-sm">Clear Image</button>
                             )}
                         </div>
-                        <button type="submit" className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <button type="submit" className="w-full bg-primary-text text-primary-bg py-2 px-4 rounded-md hover:bg-secondary-text focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-border-line">
                             Save Changes
                         </button>
                     </form>
