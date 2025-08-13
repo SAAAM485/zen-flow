@@ -139,11 +139,12 @@ export default function SinglePostPage({
         } else {
             // User is reacting or changing reaction
             const newLike = {
+                id: -Date.now(), // Temporary client-side ID
                 userId: session.user.id,
                 type,
-                id: Math.random(),
                 postId: post.id,
                 createdAt: new Date(),
+                user: { id: session.user.id },
             };
             setPost((prev) =>
                 prev
@@ -153,7 +154,7 @@ export default function SinglePostPage({
                               ...prev.postLikes.filter(
                                   (like) => like.userId !== session.user.id
                               ),
-                              newLike as any,
+                              newLike,
                           ],
                       }
                     : null

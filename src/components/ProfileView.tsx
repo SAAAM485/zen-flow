@@ -39,7 +39,7 @@ export default function ProfileView({
         setProfile(prevProfile => {
             if (!prevProfile) return null;
             const currentFollowers = prevProfile._count.followers;
-            let newFollowers = newStatus === 'following' ? currentFollowers + 1 : Math.max(0, currentFollowers - 1);
+            const newFollowers = newStatus === 'following' ? currentFollowers + 1 : Math.max(0, currentFollowers - 1);
             return {
                 ...prevProfile,
                 _count: { ...prevProfile._count, followers: newFollowers },
