@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import UserPostCard from "@/components/UserPostCard";
@@ -26,7 +26,7 @@ export default function ProfileView({
     const [profile, setProfile] = useState<UserProfile | null>(initialProfile);
     const [userPosts, setUserPosts] = useState<PostWithRelations[]>(initialProfile?.posts || []);
     const [followStatus, setFollowStatus] = useState<string | null>(initialFollowStatus);
-    const [incomingRequestId, setIncomingRequestId] = useState<number | null>(initialIncomingRequestId);
+    const [incomingRequestId] = useState<number | null>(initialIncomingRequestId);
 
     // State for the editable form
     const [name, setName] = useState(initialProfile?.name || "");

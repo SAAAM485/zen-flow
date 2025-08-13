@@ -10,6 +10,12 @@ import CommentSection from "@/components/CommentSection";
 import ConfirmModal from "@/components/ConfirmModal";
 import { toast } from "sonner";
 import { LoginPromptContext } from "@/context/LoginPromptContext";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import ImageModal from "@/components/ImageModal";
 
 export default function SinglePostPage({
     params,
@@ -26,6 +32,13 @@ export default function SinglePostPage({
     const [editText, setEditText] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [postToDelete, setPostToDelete] = useState<number | null>(null);
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+    const handleImageClick = (index: number) => {
+        setSelectedImageIndex(index);
+        setIsImageModalOpen(true);
+    };
     const currentUser = session?.user;
 
     useEffect(() => {
@@ -337,18 +350,29 @@ export default function SinglePostPage({
                         )}
                         {post.imageUrls && post.imageUrls.length > 0 && (
                             <div className="mb-4">
-                                <div className={`grid gap-2 ${post.imageUrls.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                                <Swiper
+                                    modules={[Navigation, Pagination]}
+                                    spaceBetween={10}
+                                    slidesPerView={1}
+                                    navigation
+                                    pagination={{ clickable: true }}
+                                    loop={true}
+                                    className="mySwiper rounded-lg"
+                                >
                                     {post.imageUrls.map((url, index) => (
-                                        <div key={index} className="relative aspect-video bg-secondary-bg">
-                                            <Image
-                                                src={url}
-                                                alt={`Post image ${index + 1}`}
-                                                fill
-                                                className="object-contain md:rounded-md"
-                                            />
-                                        </div>
+                                        <SwiperSlide key={index}>
+                                            <div className="relative w-full aspect-video bg-secondary-bg cursor-pointer" onClick={() => handleImageClick(index)}>
+                                                <Image
+                                                    src={url}
+                                                    alt={`Post image ${index + 1}`}
+                                                    fill
+                                                    className="object-contain"
+                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                />
+                                            </div>
+                                        </SwiperSlide>
                                     ))}
-                                </div>
+                                </Swiper>
                             </div>
                         )}
                     </>
@@ -382,6 +406,13 @@ export default function SinglePostPage({
                 title="Delete Post"
                 description="Are you sure you want to delete this post? This action cannot be undone."
             />
+            {isImageModalOpen && (
+                <ImageModal
+                    imageUrls={post.imageUrls}
+                    initialIndex={selectedImageIndex}
+                    onClose={() => setIsImageModalOpen(false)}
+                />
+            )}
         </div>
     );
 }

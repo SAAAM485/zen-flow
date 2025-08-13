@@ -8,3 +8,25 @@
     --color-border-line: #525252;
     --color-highlighted-bg: #e4e9d4;
 }
+
+/* Swiper custom styles */
+.mySwiper .swiper-button-next,
+.mySwiper .swiper-button-prev {
+  color: var(--color-secondary-text);
+}
+
+/* Targeting the arrow icon directly if it's a pseudo-element */
+.mySwiper .swiper-button-next::after,
+.mySwiper .swiper-button-prev::after {
+  color: var(--color-secondary-text);
+  font-size: 24px;
+}
+
+.mySwiper .swiper-pagination-bullet {
+  background: var(--color-secondary-bg);
+  opacity: 1;
+}
+
+.mySwiper .swiper-pagination-bullet-active {
+  background: var(--color-secondary-text);
+}

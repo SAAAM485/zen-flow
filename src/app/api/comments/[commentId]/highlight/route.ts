@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+
 import { getToken } from "next-auth/jwt"; // Import getToken
 import { prisma } from "@/lib/prisma";
 

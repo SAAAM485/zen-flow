@@ -1,0 +1,6 @@
+feat: Enhance comment section with timestamps and highlight pins
+
+- Add comment creation timestamps using `date-fns`.
+- Display a pin icon for highlighted comments using `@heroicons/react`.
+- Resolve `no-explicit-any` error in post reaction handling.
+- Fix `prefer-const` linting error in profile view.

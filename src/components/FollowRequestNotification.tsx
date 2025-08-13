@@ -25,21 +25,21 @@ export default function FollowRequestNotification() {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    const fetchPendingRequests = async () => {
-        if (session?.user?.id && status === "authenticated") {
-            try {
-                const res = await fetch("/api/follow-requests");
-                if (!res.ok) throw new Error("Failed to fetch follow requests");
-                const data: FollowRequestWithFromUser[] = await res.json();
-                setPendingRequests(data);
-            } catch (error) {
-                console.error("Error fetching pending requests:", error);
-                toast.error("Failed to load follow requests");
-            }
-        }
-    };
-
     useEffect(() => {
+        const fetchPendingRequests = async () => {
+            if (session?.user?.id && status === "authenticated") {
+                try {
+                    const res = await fetch("/api/follow-requests");
+                    if (!res.ok) throw new Error("Failed to fetch follow requests");
+                    const data: FollowRequestWithFromUser[] = await res.json();
+                    setPendingRequests(data);
+                } catch (error) {
+                    console.error("Error fetching pending requests:", error);
+                    toast.error("Failed to load follow requests");
+                }
+            }
+        };
+
         fetchPendingRequests();
         // Set up an interval to refetch requests periodically
         const interval = setInterval(fetchPendingRequests, 60000); // Refetch every 60 seconds

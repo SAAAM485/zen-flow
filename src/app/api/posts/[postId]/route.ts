@@ -3,11 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-interface PostContext {
-  params: {
-    postId: string;
-  };
-}
+
 
 // GET /api/posts/[postId] - Fetch a single post
 export async function GET(

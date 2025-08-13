@@ -10,6 +10,12 @@ import { toast } from 'sonner';
 import { LoginPromptContext } from '@/context/LoginPromptContext';
 import ConfirmModal from './ConfirmModal';
 
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+
 interface UserPostCardProps {
     post: PostWithRelations;
     onPostUpdate: (updatedPost: PostWithRelations) => void;
@@ -21,6 +27,7 @@ export default function UserPostCard({ post, onPostUpdate, onPostDeleted, showIn
     const { data: session } = useSession();
     const { setShowLoginPrompt } = useContext(LoginPromptContext);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    
 
     const handleReaction = async (type: ReactionType) => {
         if (!session?.user?.id) {
@@ -90,6 +97,7 @@ export default function UserPostCard({ post, onPostUpdate, onPostDeleted, showIn
             toast.success('Post deleted');
             onPostDeleted(post.id);
         } catch (error) {
+            console.error("Error deleting post:", error);
             toast.error('Failed to delete post');
         }
         setIsModalOpen(false);
@@ -136,18 +144,29 @@ export default function UserPostCard({ post, onPostUpdate, onPostDeleted, showIn
                     )}
                     {post.imageUrls && post.imageUrls.length > 0 && (
                         <div className="mb-4 -mx-6 md:mx-0">
-                            <div className={`grid gap-1 ${post.imageUrls.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                            <Swiper
+                                modules={[Navigation, Pagination]}
+                                spaceBetween={10}
+                                slidesPerView={1}
+                                navigation
+                                pagination={{ clickable: true }}
+                                loop={true}
+                                className="mySwiper rounded-lg"
+                            >
                                 {post.imageUrls.map((url, index) => (
-                                    <div key={index} className="relative aspect-video bg-secondary-bg">
-                                        <Image
-                                            src={url}
-                                            alt={`Post image ${index + 1}`}
-                                            fill
-                                            className="object-contain md:rounded-md"
-                                        />
-                                    </div>
+                                    <SwiperSlide key={index}>
+                                        <div className="relative w-full aspect-video bg-secondary-bg">
+                                            <Image
+                                                src={url}
+                                                alt={`Post image ${index + 1}`}
+                                                fill
+                                                className="object-contain"
+                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                            />
+                                        </div>
+                                    </SwiperSlide>
                                 ))}
-                            </div>
+                            </Swiper>
                         </div>
                     )}
                 </div>
@@ -176,6 +195,7 @@ export default function UserPostCard({ post, onPostUpdate, onPostDeleted, showIn
                 title="Delete Post"
                 description="Are you sure you want to delete this post? This cannot be undone."
             />
+            
         </div>
     );
 }
