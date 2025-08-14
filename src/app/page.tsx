@@ -41,7 +41,7 @@ async function getPosts(
         return posts;
     } catch (error) {
         console.error("An error occurred while fetching posts:", error);
-        return { posts: [], mode };
+        return [];
     }
 }
 
@@ -49,10 +49,11 @@ async function getPosts(
 export default async function Home({
     searchParams,
 }: {
-    searchParams: { mode?: string };
+    searchParams: Promise<{ mode?: string }>;
 }) {
     // Read searchParams at the top to avoid Next.js dynamic API warnings
-    const modeFromParams = searchParams.mode;
+    const resolvedSearchParams = await searchParams;
+    const modeFromParams = resolvedSearchParams.mode;
 
     const session = await getServerSession(authOptions);
     const headersList = await headers();
@@ -61,7 +62,7 @@ export default async function Home({
     // Determine mode using the searchParams prop, which is more reliable
     const mode = modeFromParams || (session ? "following" : "explore");
 
-    const posts = await getPosts(mode, cookieHeader); // Pass the derived mode string
+    const posts = await getPosts(mode, cookieHeader ?? undefined); // Pass the derived mode string
 
     return (
         <main className="max-w-2xl mx-auto p-4">

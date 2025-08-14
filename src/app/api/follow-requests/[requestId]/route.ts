@@ -5,9 +5,9 @@ import { authOptions } from "@/lib/auth";
 import { FollowRequestStatus } from "@prisma/client";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     requestId: string;
-  };
+  }>;
 }
 
 // PUT /api/follow-requests/[requestId] - Accept or decline a follow request
@@ -22,9 +22,9 @@ export async function PUT(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { requestId: requestIdString } = context.params;
-  const requestId = parseInt(requestIdString, 10);
-  if (isNaN(requestId)) {
+  const { requestId } = await context.params;
+  const requestIdNum = parseInt(requestId, 10);
+  if (isNaN(requestIdNum)) {
     return NextResponse.json({ error: "Invalid request ID" }, { status: 400 });
   }
 
@@ -35,7 +35,7 @@ export async function PUT(
     }
 
     const request = await prisma.followRequest.findUnique({
-      where: { id: requestId },
+      where: { id: requestIdNum },
     });
 
     if (!request || request.toId !== currentUserId) {
@@ -48,7 +48,7 @@ export async function PUT(
 
     if (status === 'REJECTED') {
       const updatedRequest = await prisma.followRequest.update({
-        where: { id: requestId },
+        where: { id: requestIdNum },
         data: { status: FollowRequestStatus.REJECTED },
       });
       return NextResponse.json(updatedRequest);
@@ -72,7 +72,7 @@ export async function PUT(
       }),
       // 3. Update the request status
       prisma.followRequest.update({
-        where: { id: requestId },
+        where: { id: requestIdNum },
         data: { status: FollowRequestStatus.ACCEPTED },
       }),
     ]);
@@ -80,7 +80,7 @@ export async function PUT(
     return NextResponse.json(updatedRequest);
 
   } catch (error) {
-    console.error(`Error updating follow request ${requestId}:`, error);
+    console.error(`Error updating follow request ${requestIdNum}:`, error);
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 }

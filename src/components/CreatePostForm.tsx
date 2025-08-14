@@ -170,6 +170,7 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
                             onChange={handleImageChange}
                             className="hidden"
                             disabled={isSubmitting}
+                            data-testid="image-upload-input"
                         />
                     </label>
                     <button

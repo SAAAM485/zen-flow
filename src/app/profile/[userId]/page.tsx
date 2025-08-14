@@ -56,10 +56,11 @@ async function getFollowStatus(currentUserId: number, targetUserId: number) {
     }
 }
 
-export default async function ProfilePage({ params }: { params: { userId: string } }) {
+export default async function ProfilePage({ params }: { params: Promise<{ userId: string }> }) {
+    const resolvedParams = await params;
     const session = await getServerSession(authOptions);
     const currentUserId = session?.user?.id;
-    const targetUserId = parseInt(params.userId, 10);
+    const targetUserId = parseInt(resolvedParams.userId, 10);
 
     if (isNaN(targetUserId)) {
         return <div className="text-center p-10">Invalid user ID.</div>;

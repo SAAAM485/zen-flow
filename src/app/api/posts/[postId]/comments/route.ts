@@ -4,9 +4,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 interface CommentsContext {
-  params: {
+  params: Promise<{
     postId: string;
-  };
+  }>;
 }
 
 // POST /api/posts/[postId]/comments - Create a new comment on a post
@@ -19,9 +19,9 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { postId: postIdString } = context.params;
-  const postId = parseInt(postIdString, 10);
-  if (isNaN(postId)) {
+  const { postId } = await context.params;
+  const postIdNum = parseInt(postId, 10);
+  if (isNaN(postIdNum)) {
     return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
   }
 
@@ -37,7 +37,7 @@ export async function POST(
       data: {
         text: text,
         authorId: session.user.id,
-        postId: postId,
+        postId: postIdNum,
       },
       include: {
         author: true, // Include author details in the response
@@ -47,7 +47,7 @@ export async function POST(
     return NextResponse.json(newComment, { status: 201 });
 
   } catch (error) {
-    console.error(`Error creating comment for post ${postId}:`, error);
+    console.error(`Error creating comment for post ${postIdNum}:`, error);
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 }

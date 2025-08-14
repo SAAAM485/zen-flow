@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { useContext } from 'react';
@@ -46,8 +47,9 @@ export default function Header() {
   return (
     <header className="bg-secondary-bg p-4 shadow-md sticky top-0 z-10">
       <nav className="container mx-auto flex justify-between items-center">
-        <Link href="/" className="text-2xl font-bold text-primary-text hover:text-accent-blue">
-          Zen Flow
+        <Link href="/" className="flex items-center space-x-2 text-2xl font-bold text-primary-text hover:text-accent-blue">
+          <Image src="/zenlogo.png" alt="Zen Flow Logo" width={32} height={32} />
+          <span>Zen Flow</span>
         </Link>
         
         {session?.user && <FeedToggle />}

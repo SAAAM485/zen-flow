@@ -5,20 +5,26 @@ import { authOptions } from "@/lib/auth";
 
 
 
+interface PostContext {
+  params: Promise<{
+    postId: string;
+  }>;
+}
+
 // GET /api/posts/[postId] - Fetch a single post
 export async function GET(
   req: NextRequest,
-  context: { params: { postId: string } }
+  context: PostContext
 ) {
-  const { postId: postIdString } = context.params;
-  const postId = parseInt(postIdString, 10);
-  if (isNaN(postId)) {
+  const { postId } = await context.params;
+  const postIdNum = parseInt(postId, 10);
+  if (isNaN(postIdNum)) {
     return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
   }
 
   try {
     const post = await prisma.post.findUnique({
-      where: { id: postId },
+      where: { id: postIdNum },
       include: {
         author: true,
         comments: {
@@ -38,7 +44,7 @@ export async function GET(
 
     return NextResponse.json(post);
   } catch (error) {
-    console.error(`Error fetching post ${postId}:`, error);
+    console.error(`Error fetching post ${postIdNum}:`, error);
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 }
@@ -49,14 +55,14 @@ export async function GET(
 // PUT /api/posts/[postId] - Update a post
 export async function PUT(
   req: NextRequest,
-  context: { params: { postId: string } }
+  context: PostContext
 ) {
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
-  const { postId: postIdString } = context.params;
-  const postId = parseInt(postIdString, 10);
+  const { postId } = await context.params;
+  const postIdNum = parseInt(postId, 10);
 
-  if (isNaN(postId)) {
+  if (isNaN(postIdNum)) {
     return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
   }
 
@@ -65,7 +71,7 @@ export async function PUT(
   }
 
   try {
-    const post = await prisma.post.findUnique({ where: { id: postId } });
+    const post = await prisma.post.findUnique({ where: { id: postIdNum } });
     if (!post || post.authorId !== currentUserId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -82,7 +88,7 @@ export async function PUT(
     }
 
     const updatedPost = await prisma.post.update({
-      where: { id: postId },
+      where: { id: postIdNum },
       data: {
         text: text || null,
         imageUrls: imageUrls || [],
@@ -91,7 +97,7 @@ export async function PUT(
 
     return NextResponse.json(updatedPost);
   } catch (error) {
-    console.error(`Error updating post ${postId}:`, error);
+    console.error(`Error updating post ${postIdNum}:`, error);
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 }
@@ -102,14 +108,14 @@ export async function PUT(
 // DELETE /api/posts/[postId] - Delete a post
 export async function DELETE(
   req: NextRequest,
-  context: { params: { postId: string } }
+  context: PostContext
 ) {
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
-  const { postId: postIdString } = context.params;
-  const postId = parseInt(postIdString, 10);
+  const { postId } = await context.params;
+  const postIdNum = parseInt(postId, 10);
 
-  if (isNaN(postId)) {
+  if (isNaN(postIdNum)) {
     return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
   }
 
@@ -118,16 +124,16 @@ export async function DELETE(
   }
 
   try {
-    const post = await prisma.post.findUnique({ where: { id: postId } });
+    const post = await prisma.post.findUnique({ where: { id: postIdNum } });
     if (!post || post.authorId !== currentUserId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    await prisma.post.delete({ where: { id: postId } });
+    await prisma.post.delete({ where: { id: postIdNum } });
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    console.error(`Error deleting post ${postId}:`, error);
+    console.error(`Error deleting post ${postIdNum}:`, error);
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 }

@@ -5,9 +5,9 @@ import { ReactionType } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 
 interface ReactionsContext {
-  params: {
+  params: Promise<{
     postId: string;
-  };
+  }>;
 }
 
 // POST /api/posts/[postId]/reactions - Add or update a reaction to a post
@@ -28,9 +28,9 @@ export async function POST(
         );
     }
 
-    const { postId: postIdString } = context.params;
-    const postId = parseInt(postIdString, 10);
-    if (isNaN(postId)) {
+    const { postId } = await context.params;
+    const postIdNum = parseInt(postId, 10);
+    if (isNaN(postIdNum)) {
         return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
     }
     const userId = session.user.id;
@@ -40,7 +40,7 @@ export async function POST(
             where: {
                 userId_postId: {
                     userId,
-                    postId,
+                    postId: postIdNum,
                 },
             },
             update: {
@@ -48,7 +48,7 @@ export async function POST(
             },
             create: {
                 userId,
-                postId,
+                postId: postIdNum,
                 type: type as ReactionType,
             },
         });
@@ -72,9 +72,9 @@ export async function DELETE(
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { postId: postIdString } = context.params;
-    const postId = parseInt(postIdString, 10);
-    if (isNaN(postId)) {
+    const { postId } = await context.params;
+    const postIdNum = parseInt(postId, 10);
+    if (isNaN(postIdNum)) {
         return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
     }
     const userId = session.user.id;
@@ -84,7 +84,7 @@ export async function DELETE(
             where: {
                 userId_postId: {
                     userId,
-                    postId,
+                    postId: postIdNum,
                 },
             },
         });

@@ -24,7 +24,7 @@ describe('POST /api/users/[userId]/follow-requests', () => {
 
     const req = {} as NextRequest;
     const params = { userId: '2' };
-    const response = await POST(req, { params });
+    const response = await POST(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(201);
@@ -49,7 +49,7 @@ describe('POST /api/users/[userId]/follow-requests', () => {
 
     const req = {} as NextRequest;
     const params = { userId: '2' };
-    const response = await POST(req, { params });
+    const response = await POST(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(409);
@@ -59,7 +59,7 @@ describe('POST /api/users/[userId]/follow-requests', () => {
   it('should return 400 if trying to follow self', async () => {
     const req = {} as NextRequest;
     const params = { userId: '1' }; // Same as current user ID
-    const response = await POST(req, { params });
+    const response = await POST(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(400);
@@ -71,7 +71,7 @@ describe('POST /api/users/[userId]/follow-requests', () => {
 
     const req = {} as NextRequest;
     const params = { userId: '2' };
-    const response = await POST(req, { params });
+    const response = await POST(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -81,7 +81,7 @@ describe('POST /api/users/[userId]/follow-requests', () => {
   it('should return 400 for invalid user ID', async () => {
     const req = {} as NextRequest;
     const params = { userId: 'abc' };
-    const response = await POST(req, { params });
+    const response = await POST(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(400);
@@ -108,7 +108,7 @@ describe('DELETE /api/users/[userId]/follow-requests', () => {
 
     const req = {} as NextRequest;
     const params = { userId: '2' };
-    const response = await DELETE(req, { params });
+    const response = await DELETE(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -129,7 +129,7 @@ describe('DELETE /api/users/[userId]/follow-requests', () => {
 
     const req = {} as NextRequest;
     const params = { userId: '2' };
-    const response = await DELETE(req, { params });
+    const response = await DELETE(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(404);
@@ -141,7 +141,7 @@ describe('DELETE /api/users/[userId]/follow-requests', () => {
 
     const req = {} as NextRequest;
     const params = { userId: '2' };
-    const response = await DELETE(req, { params });
+    const response = await DELETE(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -151,7 +151,7 @@ describe('DELETE /api/users/[userId]/follow-requests', () => {
   it('should return 400 for invalid user ID', async () => {
     const req = {} as NextRequest;
     const params = { userId: 'abc' };
-    const response = await DELETE(req, { params });
+    const response = await DELETE(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(400);

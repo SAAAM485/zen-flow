@@ -100,7 +100,7 @@ describe('PUT /api/follow-requests/[requestId]', () => {
 
     const req = { json: () => Promise.resolve({ status: 'ACCEPTED' }) } as NextRequest;
     const params = { requestId: '1' };
-    const response = await PUT(req, { params });
+    const response = await PUT(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -131,7 +131,7 @@ describe('PUT /api/follow-requests/[requestId]', () => {
 
     const req = { json: () => Promise.resolve({ status: 'REJECTED' }) } as NextRequest;
     const params = { requestId: '1' };
-    const response = await PUT(req, { params });
+    const response = await PUT(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -148,7 +148,7 @@ describe('PUT /api/follow-requests/[requestId]', () => {
 
     const req = { json: () => Promise.resolve({ status: 'ACCEPTED' }) } as NextRequest;
     const params = { requestId: '1' };
-    const response = await PUT(req, { params });
+    const response = await PUT(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(404);
@@ -167,7 +167,7 @@ describe('PUT /api/follow-requests/[requestId]', () => {
 
     const req = { json: () => Promise.resolve({ status: 'ACCEPTED' }) } as NextRequest;
     const params = { requestId: '1' };
-    const response = await PUT(req, { params });
+    const response = await PUT(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(409);
@@ -179,7 +179,7 @@ describe('PUT /api/follow-requests/[requestId]', () => {
 
     const req = { json: () => Promise.resolve({ status: 'ACCEPTED' }) } as NextRequest;
     const params = { requestId: '1' };
-    const response = await PUT(req, { params });
+    const response = await PUT(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -189,7 +189,7 @@ describe('PUT /api/follow-requests/[requestId]', () => {
   it('should return 400 for invalid request ID', async () => {
     const req = { json: () => Promise.resolve({ status: 'ACCEPTED' }) } as NextRequest;
     const params = { requestId: 'abc' };
-    const response = await PUT(req, { params });
+    const response = await PUT(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(400);
@@ -199,7 +199,7 @@ describe('PUT /api/follow-requests/[requestId]', () => {
   it('should return 400 for invalid status', async () => {
     const req = { json: () => Promise.resolve({ status: 'INVALID' }) } as NextRequest;
     const params = { requestId: '1' };
-    const response = await PUT(req, { params });
+    const response = await PUT(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(400);
@@ -219,7 +219,7 @@ describe('PUT /api/follow-requests/[requestId]', () => {
 
     const req = { json: () => Promise.resolve({ status: 'ACCEPTED' }) } as NextRequest;
     const params = { requestId: '1' };
-    const response = await PUT(req, { params });
+    const response = await PUT(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(500);

@@ -4,12 +4,18 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+interface UserContext {
+  params: Promise<{
+    userId: string;
+  }>;
+}
+
 // GET /api/users/[userId] - Fetch a user's public profile
 export async function GET(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  context: UserContext
 ) {
-  const { userId } = await params;
+  const { userId } = await context.params;
   const parsedUserId = parseInt(userId, 10);
   if (isNaN(parsedUserId)) {
     return NextResponse.json({ message: "Invalid user ID" }, { status: 400 });
@@ -49,7 +55,7 @@ export async function GET(
     return NextResponse.json(user);
 
   } catch (error) {
-    console.error(`Error fetching user ${userId}:`, error);
+    console.error(`Error fetching user ${parsedUserId}:`, error);
     return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
   }
 }
@@ -57,12 +63,12 @@ export async function GET(
 // PUT /api/users/[userId] - Update a user's profile
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  context: UserContext
 ) {
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
-  const { userId: targetUserIdString } = await params;
-  const targetUserId = parseInt(targetUserIdString, 10);
+  const { userId } = await context.params;
+  const targetUserId = parseInt(userId, 10);
 
   if (isNaN(targetUserId)) {
     return NextResponse.json({ message: "Invalid user ID" }, { status: 400 });

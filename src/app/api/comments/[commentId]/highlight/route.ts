@@ -1,19 +1,23 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
-
-import { getToken } from "next-auth/jwt"; // Import getToken
+import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
 
+interface HighlightContext {
+  params: Promise<{
+    commentId: string;
+  }>;
+}
+
 // POST /api/comments/[commentId]/highlight - Highlight a comment
-export async function POST(req: NextRequest, context: any) {
+export async function POST(req: NextRequest, context: HighlightContext) {
     const token = await getToken({ req }); // Get token
     if (!token?.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { commentId: commentIdString } = await context.params;
-    const commentId = parseInt(commentIdString, 10);
-    if (isNaN(commentId)) {
+    const { commentId } = await context.params;
+    const commentIdNum = parseInt(commentId, 10);
+    if (isNaN(commentIdNum)) {
         return NextResponse.json(
             { error: "Invalid comment ID" },
             { status: 400 }
@@ -23,7 +27,7 @@ export async function POST(req: NextRequest, context: any) {
 
     try {
         const comment = await prisma.comment.findUnique({
-            where: { id: commentId },
+            where: { id: commentIdNum },
             include: { post: true },
         });
 
@@ -39,7 +43,7 @@ export async function POST(req: NextRequest, context: any) {
         }
 
         const updatedComment = await prisma.comment.update({
-            where: { id: commentId },
+            where: { id: commentIdNum },
             data: { isHighlighted: true },
             include: { author: true }, // Include author in the response
         });
@@ -55,15 +59,15 @@ export async function POST(req: NextRequest, context: any) {
 }
 
 // DELETE /api/comments/[commentId]/highlight - Unhighlight a comment
-export async function DELETE(req: NextRequest, context: any) {
+export async function DELETE(req: NextRequest, context: HighlightContext) {
     const token = await getToken({ req }); // Get token
     if (!token?.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { commentId: commentIdString } = await context.params;
-    const commentId = parseInt(commentIdString, 10);
-    if (isNaN(commentId)) {
+    const { commentId } = await context.params;
+    const commentIdNum = parseInt(commentId, 10);
+    if (isNaN(commentIdNum)) {
         return NextResponse.json(
             { error: "Invalid comment ID" },
             { status: 400 }
@@ -73,7 +77,7 @@ export async function DELETE(req: NextRequest, context: any) {
 
     try {
         const comment = await prisma.comment.findUnique({
-            where: { id: commentId },
+            where: { id: commentIdNum },
             include: { post: true },
         });
 
@@ -89,7 +93,7 @@ export async function DELETE(req: NextRequest, context: any) {
         }
 
         const updatedComment = await prisma.comment.update({
-            where: { id: commentId },
+            where: { id: commentIdNum },
             data: { isHighlighted: false },
             include: { author: true }, // Include author in the response
         });

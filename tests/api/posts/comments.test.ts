@@ -18,7 +18,7 @@ describe("POST /api/posts/[postId]/comments", () => {
 
     const req = { json: async () => ({ text: MOCK_COMMENT_TEXT }) } as NextRequest;
     const params = { postId: MOCK_POST_ID.toString() };
-    const response = await POST(req, { params });
+    const response = await POST(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(201);
@@ -34,7 +34,7 @@ describe("POST /api/posts/[postId]/comments", () => {
 
     const req = { json: async () => ({ text: MOCK_COMMENT_TEXT }) } as NextRequest;
     const params = { postId: MOCK_POST_ID.toString() };
-    const response = await POST(req, { params });
+    const response = await POST(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -46,7 +46,7 @@ describe("POST /api/posts/[postId]/comments", () => {
 
     const req = { json: async () => ({ text: MOCK_COMMENT_TEXT }) } as NextRequest;
     const params = { postId: MOCK_POST_ID.toString() };
-    const response = await POST(req, { params });
+    const response = await POST(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(500);

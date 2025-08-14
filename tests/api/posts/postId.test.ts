@@ -32,7 +32,7 @@ describe("GET /api/posts/[postId]", () => {
     const req = {} as NextRequest;
     const context = { params: { postId: MOCK_POST_ID.toString() } };
 
-    const res = await GET(req, context);
+    const res = await GET(req, { params: Promise.resolve(context.params) });
     const data = await res.json();
 
     expect(res.status).toBe(200);
@@ -46,7 +46,7 @@ describe("GET /api/posts/[postId]", () => {
   it("should return 400 if invalid postId", async () => {
     const req = {} as NextRequest;
     const context = { params: { postId: "invalid" } };
-    const res = await GET(req, context);
+    const res = await GET(req, { params: Promise.resolve(context.params) });
     const data = await res.json();
     expect(res.status).toBe(400);
     expect(data).toEqual({ error: "Invalid post ID" });
@@ -56,7 +56,7 @@ describe("GET /api/posts/[postId]", () => {
     (prisma.post.findUnique as jest.Mock).mockResolvedValue(null);
     const req = {} as NextRequest;
     const context = { params: { postId: MOCK_POST_ID.toString() } };
-    const res = await GET(req, context);
+    const res = await GET(req, { params: Promise.resolve(context.params) });
     const data = await res.json();
     expect(res.status).toBe(404);
     expect(data).toEqual({ error: "Post not found" });
@@ -66,7 +66,7 @@ describe("GET /api/posts/[postId]", () => {
     (prisma.post.findUnique as jest.Mock).mockRejectedValue(new Error("DB Error"));
     const req = {} as NextRequest;
     const context = { params: { postId: MOCK_POST_ID.toString() } };
-    const res = await GET(req, context);
+    const res = await GET(req, { params: Promise.resolve(context.params) });
     const data = await res.json();
     expect(res.status).toBe(500);
     expect(data).toEqual({ error: "Something went wrong" });
@@ -88,7 +88,7 @@ describe("PUT /api/posts/[postId]", () => {
     const req = { json: async () => ({ text: MOCK_UPDATED_TEXT, imageUrls: MOCK_IMAGE_URLS }) } as NextRequest;
     const context = { params: { postId: MOCK_POST_ID.toString() } };
 
-    const res = await PUT(req, context);
+    const res = await PUT(req, { params: Promise.resolve(context.params) });
     const data = await res.json();
 
     expect(res.status).toBe(200);
@@ -103,7 +103,7 @@ describe("PUT /api/posts/[postId]", () => {
     (getServerSession as jest.Mock).mockResolvedValue(null);
     const req = { json: async () => ({ text: MOCK_UPDATED_TEXT }) } as NextRequest;
     const context = { params: { postId: MOCK_POST_ID.toString() } };
-    const res = await PUT(req, context);
+    const res = await PUT(req, { params: Promise.resolve(context.params) });
     expect(res.status).toBe(401);
   });
 
@@ -111,7 +111,7 @@ describe("PUT /api/posts/[postId]", () => {
     (getServerSession as jest.Mock).mockResolvedValue({ user: { id: "another-user" } });
     const req = { json: async () => ({ text: MOCK_UPDATED_TEXT }) } as NextRequest;
     const context = { params: { postId: MOCK_POST_ID.toString() } };
-    const res = await PUT(req, context);
+    const res = await PUT(req, { params: Promise.resolve(context.params) });
     expect(res.status).toBe(403);
   });
 
@@ -123,7 +123,7 @@ describe("PUT /api/posts/[postId]", () => {
   ])("should return 400 if content is invalid", async (payload) => {
     const req = { json: async () => payload } as NextRequest;
     const context = { params: { postId: MOCK_POST_ID.toString() } };
-    const res = await PUT(req, context);
+    const res = await PUT(req, { params: Promise.resolve(context.params) });
     const data = await res.json();
     expect(res.status).toBe(400);
     expect(data).toEqual({ error: "Post content or an image is required" });
@@ -141,7 +141,7 @@ describe("DELETE /api/posts/[postId]", () => {
     (prisma.post.delete as jest.Mock).mockResolvedValue({});
     const req = {} as NextRequest;
     const context = { params: { postId: MOCK_POST_ID.toString() } };
-    const res = await DELETE(req, context);
+    const res = await DELETE(req, { params: Promise.resolve(context.params) });
     const data = await res.json();
     expect(res.status).toBe(200);
     expect(data).toEqual({ success: true });
@@ -152,7 +152,7 @@ describe("DELETE /api/posts/[postId]", () => {
     (getServerSession as jest.Mock).mockResolvedValue({ user: { id: "another-user" } });
     const req = {} as NextRequest;
     const context = { params: { postId: MOCK_POST_ID.toString() } };
-    const res = await DELETE(req, context);
+    const res = await DELETE(req, { params: Promise.resolve(context.params) });
     expect(res.status).toBe(403);
   });
 });

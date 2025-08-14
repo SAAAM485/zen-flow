@@ -26,7 +26,7 @@ describe("PUT /api/comments/[commentId]", () => {
 
     const req = { json: () => Promise.resolve({ text: "Updated text" }) } as NextRequest;
     const params = { commentId: "1" };
-    const response = await PUT(req, { params });
+    const response = await PUT(req, { params: Promise.resolve(params) });
 
     expect(response.status).toBe(200);
   });
@@ -43,7 +43,7 @@ describe("DELETE /api/comments/[commentId]", () => {
 
     const req = {} as NextRequest;
     const params = { commentId: "1" };
-    const response = await DELETE(req, { params });
+    const response = await DELETE(req, { params: Promise.resolve(params) });
 
     expect(response.status).toBe(200);
   });
@@ -55,7 +55,7 @@ describe("DELETE /api/comments/[commentId]", () => {
 
     const req = {} as NextRequest;
     const params = { commentId: "1" };
-    const response = await DELETE(req, { params });
+    const response = await DELETE(req, { params: Promise.resolve(params) });
 
     expect(response.status).toBe(200);
   });

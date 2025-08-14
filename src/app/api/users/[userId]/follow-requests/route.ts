@@ -7,7 +7,7 @@ import { authOptions } from "@/lib/auth";
 // POST /api/users/[userId]/follow-requests - Send a follow request
 export async function POST(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  context: { params: Promise<{ userId: string }> }
 ) {
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
@@ -16,8 +16,8 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { userId: userIdString } = await params;
-  const targetUserId = parseInt(userIdString, 10);
+  const { userId } = await context.params;
+  const targetUserId = parseInt(userId, 10);
   if (isNaN(targetUserId)) {
     return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
   }
@@ -55,7 +55,7 @@ export async function POST(
 // DELETE /api/users/[userId]/follow-requests - Cancel a sent follow request
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  context: { params: Promise<{ userId: string }> }
 ) {
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
@@ -64,8 +64,8 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { userId: userIdString } = await params;
-  const targetUserId = parseInt(userIdString, 10);
+  const { userId } = await context.params;
+  const targetUserId = parseInt(userId, 10);
   if (isNaN(targetUserId)) {
     return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
   }

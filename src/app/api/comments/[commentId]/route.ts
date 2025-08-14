@@ -4,9 +4,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 interface CommentContext {
-  params: {
+  params: Promise<{
     commentId: string;
-  };
+  }>;
 }
 
 // PUT /api/comments/[commentId] - Update a comment
@@ -16,10 +16,10 @@ export async function PUT(
 ) {
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
-  const { commentId: commentIdString } = context.params;
-  const commentId = parseInt(commentIdString, 10);
+  const { commentId } = await context.params;
+  const commentIdNum = parseInt(commentId, 10);
 
-  if (isNaN(commentId)) {
+  if (isNaN(commentIdNum)) {
     return NextResponse.json({ error: "Invalid comment ID" }, { status: 400 });
   }
 
@@ -28,7 +28,7 @@ export async function PUT(
   }
 
   try {
-    const comment = await prisma.comment.findUnique({ where: { id: commentId } });
+    const comment = await prisma.comment.findUnique({ where: { id: commentIdNum } });
     if (!comment || comment.authorId !== currentUserId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -39,7 +39,7 @@ export async function PUT(
     }
 
     const updatedComment = await prisma.comment.update({
-      where: { id: commentId },
+      where: { id: commentIdNum },
       data: { text },
       include: { author: true }, // Include author in the response
     });
@@ -47,7 +47,7 @@ export async function PUT(
     return NextResponse.json(updatedComment);
 
   } catch (error) {
-    console.error(`Error updating comment ${commentId}:`, error);
+    console.error(`Error updating comment ${commentIdNum}:`, error);
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 }
@@ -59,10 +59,10 @@ export async function DELETE(
 ) {
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
-  const { commentId: commentIdString } = context.params;
-  const commentId = parseInt(commentIdString, 10);
+  const { commentId } = await context.params;
+  const commentIdNum = parseInt(commentId, 10);
 
-  if (isNaN(commentId)) {
+  if (isNaN(commentIdNum)) {
     return NextResponse.json({ error: "Invalid comment ID" }, { status: 400 });
   }
 
@@ -72,7 +72,7 @@ export async function DELETE(
 
   try {
     const comment = await prisma.comment.findUnique({ 
-      where: { id: commentId },
+      where: { id: commentIdNum },
       include: { post: true },
     });
 
@@ -81,12 +81,12 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    await prisma.comment.delete({ where: { id: commentId } });
+    await prisma.comment.delete({ where: { id: commentIdNum } });
 
     return NextResponse.json({ success: true }, { status: 200 });
 
   } catch (error) {
-    console.error(`Error deleting comment ${commentId}:`, error);
+    console.error(`Error deleting comment ${commentIdNum}:`, error);
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 }

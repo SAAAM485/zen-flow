@@ -42,7 +42,7 @@ describe("POST /api/comments/[commentId]/reactions", () => {
     } as NextRequest;
     const params = { commentId: MOCK_COMMENT_ID.toString() };
 
-    const res = await POST(req, { params });
+    const res = await POST(req, { params: Promise.resolve(params) });
     const data = await res.json();
 
     expect(res.status).toBe(200);
@@ -79,7 +79,7 @@ describe("POST /api/comments/[commentId]/reactions", () => {
     } as NextRequest;
     const params = { commentId: MOCK_COMMENT_ID.toString() };
 
-    const res = await POST(req, { params });
+    const res = await POST(req, { params: Promise.resolve(params) });
     const data = await res.json();
 
     expect(res.status).toBe(401);
@@ -97,7 +97,7 @@ describe("POST /api/comments/[commentId]/reactions", () => {
     } as NextRequest;
     const params = { commentId: MOCK_COMMENT_ID.toString() };
 
-    const res = await POST(req, { params });
+    const res = await POST(req, { params: Promise.resolve(params) });
     const data = await res.json();
 
     expect(res.status).toBe(400);
@@ -115,7 +115,7 @@ describe("POST /api/comments/[commentId]/reactions", () => {
     } as NextRequest;
     const params = { commentId: "invalid" };
 
-    const res = await POST(req, { params });
+    const res = await POST(req, { params: Promise.resolve(params) });
     const data = await res.json();
 
     expect(res.status).toBe(400);
@@ -136,7 +136,7 @@ describe("POST /api/comments/[commentId]/reactions", () => {
     } as NextRequest;
     const params = { commentId: MOCK_COMMENT_ID.toString() };
 
-    const res = await POST(req, { params });
+    const res = await POST(req, { params: Promise.resolve(params) });
     const data = await res.json();
 
     expect(res.status).toBe(500);
@@ -162,7 +162,7 @@ describe("DELETE /api/comments/[commentId]/reactions", () => {
     const req = {} as NextRequest;
     const params = { commentId: MOCK_COMMENT_ID.toString() };
 
-    const res = await DELETE(req, { params });
+    const res = await DELETE(req, { params: Promise.resolve(params) });
     const data = await res.json();
 
     expect(res.status).toBe(200);
@@ -183,7 +183,7 @@ describe("DELETE /api/comments/[commentId]/reactions", () => {
     const req = {} as NextRequest;
     const params = { commentId: MOCK_COMMENT_ID.toString() };
 
-    const res = await DELETE(req, { params });
+    const res = await DELETE(req, { params: Promise.resolve(params) });
     const data = await res.json();
 
     expect(res.status).toBe(401);
@@ -199,7 +199,7 @@ describe("DELETE /api/comments/[commentId]/reactions", () => {
     const req = {} as NextRequest;
     const params = { commentId: "invalid" };
 
-    const res = await DELETE(req, { params });
+    const res = await DELETE(req, { params: Promise.resolve(params) });
     const data = await res.json();
 
     expect(res.status).toBe(400);
@@ -218,7 +218,7 @@ describe("DELETE /api/comments/[commentId]/reactions", () => {
     const req = {} as NextRequest;
     const params = { commentId: MOCK_COMMENT_ID.toString() };
 
-    const res = await DELETE(req, { params });
+    const res = await DELETE(req, { params: Promise.resolve(params) });
     const data = await res.json();
 
     expect(res.status).toBe(500);

@@ -20,7 +20,7 @@ import ImageModal from "@/components/ImageModal";
 export default function SinglePostPage({
     params,
 }: {
-    params: { postId: string };
+    params: Promise<{ postId: string }>;
 }) {
     const { postId } = use(params);
     const { data: session } = useSession();

@@ -20,7 +20,7 @@ describe('GET /api/users/[userId]', () => {
 
     const req = {} as NextRequest;
     const params = { userId: '1' };
-    const response = await GET(req, { params });
+    const response = await GET(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -52,7 +52,7 @@ describe('GET /api/users/[userId]', () => {
 
     const req = {} as NextRequest;
     const params = { userId: "1" };
-    const response = await GET(req, { params });
+    const response = await GET(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(500);
@@ -64,7 +64,7 @@ describe('GET /api/users/[userId]', () => {
 
     const req = {} as NextRequest;
     const params = { userId: '999' };
-    const response = await GET(req, { params });
+    const response = await GET(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(404);
@@ -74,7 +74,7 @@ describe('GET /api/users/[userId]', () => {
   it('should return 400 for invalid user ID', async () => {
     const req = {} as NextRequest;
     const params = { userId: 'abc' };
-    const response = await GET(req, { params });
+    const response = await GET(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(400);
@@ -105,7 +105,7 @@ describe('PUT /api/users/[userId]', () => {
 
     const req = { json: () => Promise.resolve({ name: 'Updated Name', image: 'updated.jpg' }) } as NextRequest;
     const params = { userId: '1' };
-    const response = await PUT(req, { params });
+    const response = await PUT(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -124,7 +124,7 @@ describe('PUT /api/users/[userId]', () => {
 
     const req = { json: () => Promise.resolve({ name: 'Updated Name' }) } as NextRequest;
     const params = { userId: '1' };
-    const response = await PUT(req, { params });
+    const response = await PUT(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(403);
@@ -136,7 +136,7 @@ describe('PUT /api/users/[userId]', () => {
 
     const req = { json: () => Promise.resolve({ name: 'Updated Name' }) } as NextRequest;
     const params = { userId: '1' };
-    const response = await PUT(req, { params });
+    const response = await PUT(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -146,7 +146,7 @@ describe('PUT /api/users/[userId]', () => {
   it('should return 400 for invalid name', async () => {
     const req = { json: () => Promise.resolve({ name: '' }) } as NextRequest;
     const params = { userId: '1' };
-    const response = await PUT(req, { params });
+    const response = await PUT(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(400);
@@ -156,7 +156,7 @@ describe('PUT /api/users/[userId]', () => {
   it('should return 400 for invalid user ID', async () => {
     const req = { json: () => Promise.resolve({ name: 'Valid Name' }) } as NextRequest;
     const params = { userId: 'abc' };
-    const response = await PUT(req, { params });
+    const response = await PUT(req, { params: Promise.resolve(params) });
     const data = await response.json();
 
     expect(response.status).toBe(400);

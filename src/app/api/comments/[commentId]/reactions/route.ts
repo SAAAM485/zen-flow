@@ -4,9 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { ReactionType } from "@prisma/client";
 
 interface ReactionsContext {
-  params: {
+  params: Promise<{
     commentId: string;
-  };
+  }>;
 }
 
 // POST /api/comments/[commentId]/reactions - Add or update a reaction to a comment
@@ -27,9 +27,9 @@ export async function POST(
         );
     }
 
-    const { commentId: commentIdString } = context.params;
-    const commentId = parseInt(commentIdString, 10);
-    if (isNaN(commentId)) {
+    const { commentId } = await context.params;
+    const commentIdNum = parseInt(commentId, 10);
+    if (isNaN(commentIdNum)) {
         return NextResponse.json({ error: "Invalid comment ID" }, { status: 400 });
     }
     const userId = session.user.id;
@@ -39,7 +39,7 @@ export async function POST(
             where: {
                 userId_commentId: {
                     userId,
-                    commentId,
+                    commentId: commentIdNum,
                 },
             },
             update: {
@@ -47,7 +47,7 @@ export async function POST(
             },
             create: {
                 userId,
-                commentId,
+                commentId: commentIdNum,
                 type: type as ReactionType,
             },
         });
@@ -71,9 +71,9 @@ export async function DELETE(
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { commentId: commentIdString } = context.params;
-    const commentId = parseInt(commentIdString, 10);
-    if (isNaN(commentId)) {
+    const { commentId } = await context.params;
+    const commentIdNum = parseInt(commentId, 10);
+    if (isNaN(commentIdNum)) {
         return NextResponse.json({ error: "Invalid comment ID" }, { status: 400 });
     }
     const userId = session.user.id;
@@ -83,7 +83,7 @@ export async function DELETE(
             where: {
                 userId_commentId: {
                     userId,
-                    commentId,
+                    commentId: commentIdNum,
                 },
             },
         });

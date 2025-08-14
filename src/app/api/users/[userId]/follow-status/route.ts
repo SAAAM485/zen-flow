@@ -7,7 +7,7 @@ import { authOptions } from "@/lib/auth";
 // GET /api/users/[userId]/follow-status - Get the follow status between the current user and the target user
 export async function GET(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  context: { params: Promise<{ userId: string }> }
 ) {
   const session = await getServerSession(authOptions);
   const currentUserId = session?.user?.id;
@@ -16,8 +16,8 @@ export async function GET(
     return NextResponse.json({ status: "not_following" }); // Not logged in, so can't be following
   }
 
-  const { userId: userIdString } = params;
-  const targetUserId = parseInt(userIdString, 10);
+  const { userId } = await context.params;
+  const targetUserId = parseInt(userId, 10);
 
   if (isNaN(targetUserId)) {
     return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
