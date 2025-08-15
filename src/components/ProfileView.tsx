@@ -120,29 +120,33 @@ export default function ProfileView({
     return (
         <div className="container mx-auto p-4 max-w-2xl">
             <div className="bg-secondary-bg shadow-md rounded-lg p-6 mb-6">
-                <div className="flex items-start">
-                    <Image
-                        src={imagePreview || imageUrl || profile.image || "/default-avatar.png"}
-                        alt={profile.name || "User"}
-                        width={96}
-                        height={96}
-                        className="w-24 h-24 rounded-full mr-6 object-cover"
-                    />
+                <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left">
+                    <div className='flex-shrink-0 mb-4 sm:mb-0 sm:mr-6'>
+                        <Image
+                            src={imagePreview || imageUrl || profile.image || "/default-avatar.png"}
+                            alt={profile.name || "User"}
+                            width={96}
+                            height={96}
+                            className="w-24 h-24 rounded-full object-cover"
+                        />
+                    </div>
                     <div className="flex-grow">
                         <h2 className="text-2xl font-bold">{profile.name}</h2>
                         <p className="text-secondary-text">Joined on {new Date(profile.createdAt).toLocaleDateString()}</p>
-                        <div className="flex space-x-4 mt-2">
+                        <div className="flex justify-center sm:justify-start space-x-4 mt-2">
                             <span><b>{profile._count.followers}</b> Followers</span>
                             <span><b>{profile._count.following}</b> Following</span>
                         </div>
                     </div>
                     {!isCurrentUser && status === 'authenticated' && (
-                        <FollowButton 
-                            initialStatus={followStatus}
-                            targetUserId={targetUserId}
-                            incomingRequestId={incomingRequestId}
-                            onStatusChange={handleFollowStatusChange}
-                        />
+                        <div className="w-full sm:w-auto mt-4 sm:mt-0 sm:ml-4 flex-shrink-0">
+                            <FollowButton 
+                                initialStatus={followStatus}
+                                targetUserId={targetUserId}
+                                incomingRequestId={incomingRequestId}
+                                onStatusChange={handleFollowStatusChange}
+                            />
+                        </div>
                     )}
                 </div>
             </div>
@@ -174,7 +178,7 @@ export default function ProfileView({
                                 <button type="button" onClick={handleClearImage} className="mt-2 text-secondary-text hover:text-primary-text text-sm">Clear Image</button>
                             )}
                         </div>
-                        <button type="submit" className="w-full bg-primary-text text-primary-bg py-2 px-4 rounded-md hover:bg-secondary-text focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-border-line">
+                        <button type="submit" className="w-full bg-primary-text text-primary-bg py-2 px-4 rounded-md hover:bg-border-line hover:text-primary-bg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-border-line">
                             Save Changes
                         </button>
                     </form>

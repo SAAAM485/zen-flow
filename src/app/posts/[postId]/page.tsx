@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useContext, use } from 'react';
+import { useState, useEffect, useContext, use } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,12 +10,35 @@ import CommentSection from "@/components/CommentSection";
 import ConfirmModal from "@/components/ConfirmModal";
 import { toast } from "sonner";
 import { LoginPromptContext } from "@/context/LoginPromptContext";
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 import ImageModal from "@/components/ImageModal";
+
+const reactionIcons = {
+    LIKE: (props) => (
+        <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.085a2 2 0 00-1.736.97l-1.9 3.8z" />
+        </svg>
+    ),
+    INSIGHTFUL: (props) => (
+        <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.707.707M12 21v-1m-6.364-1.636l.707-.707" />
+        </svg>
+    ),
+    THANKS: (props) => (
+        <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.672l1.318-1.354a4.5 4.5 0 116.364 6.364L12 21.272l-7.682-7.682a4.5 4.5 0 010-6.364z" />
+        </svg>
+    ),
+    HAHA: (props) => (
+        <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+    ),
+};
 
 export default function SinglePostPage({
     params,
@@ -93,13 +116,20 @@ export default function SinglePostPage({
                           ...prevPost,
                           comments: prevPost.comments
                               .map((c) =>
-                                  c.id === updatedComment.id ? updatedComment : c
+                                  c.id === updatedComment.id
+                                      ? updatedComment
+                                      : c
                               )
                               .sort((a, b) => {
                                   // Sort by isHighlighted (descending) then createdAt (ascending)
-                                  if (a.isHighlighted && !b.isHighlighted) return -1;
-                                  if (!a.isHighlighted && b.isHighlighted) return 1;
-                                  return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                                  if (a.isHighlighted && !b.isHighlighted)
+                                      return -1;
+                                  if (!a.isHighlighted && b.isHighlighted)
+                                      return 1;
+                                  return (
+                                      new Date(a.createdAt).getTime() -
+                                      new Date(b.createdAt).getTime()
+                                  );
                               }),
                       }
                     : null
@@ -232,7 +262,10 @@ export default function SinglePostPage({
 
     const handleSaveEdit = async (id: number) => {
         if (!post) return;
-        if (!editText.trim() && (!post.imageUrls || post.imageUrls.length === 0)) {
+        if (
+            !editText.trim() &&
+            (!post.imageUrls || post.imageUrls.length === 0)
+        ) {
             toast.error("Post content or an image is required.");
             return;
         }
@@ -240,7 +273,10 @@ export default function SinglePostPage({
             const res = await fetch(`/api/posts/${id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ text: editText, imageUrls: post.imageUrls }),
+                body: JSON.stringify({
+                    text: editText,
+                    imageUrls: post.imageUrls,
+                }),
             });
             if (!res.ok) throw new Error("Failed to update post");
             const updatedPost = await res.json();
@@ -275,7 +311,9 @@ export default function SinglePostPage({
         return <div className="text-center p-10">Post not found.</div>;
     }
 
-    const currentUserReactionType = post.postLikes.find(like => like.userId === currentUser?.id)?.type;
+    const currentUserReactionType = post.postLikes.find(
+        (like) => like.userId === currentUser?.id
+    )?.type;
 
     return (
         <div className="max-w-2xl mx-auto p-4">
@@ -329,13 +367,13 @@ export default function SinglePostPage({
                         <div className="text-right mt-2">
                             <button
                                 onClick={() => handleSaveEdit(post.id)}
-                                className="bg-secondary-text text-secondary-bg py-1 px-3 rounded-md hover:bg-primary-text mr-2"
+                                className="bg-secondary-text text-secondary-bg py-1 px-3 rounded-md hover:bg-primary-text mr-2 w-20"
                             >
                                 Save
                             </button>
                             <button
                                 onClick={handleCancelEdit}
-                                className="bg-border-line text-primary-text py-1 px-3 rounded-md hover:bg-secondary-text"
+                                className="bg-border-line text-secondary-bg py-1 px-3 rounded-md hover:bg-primary-text mr-2 w-20"
                             >
                                 Cancel
                             </button>
@@ -361,10 +399,17 @@ export default function SinglePostPage({
                                 >
                                     {post.imageUrls.map((url, index) => (
                                         <SwiperSlide key={index}>
-                                            <div className="relative w-full aspect-video bg-secondary-bg cursor-pointer" onClick={() => handleImageClick(index)}>
+                                            <div
+                                                className="relative w-full aspect-video bg-secondary-bg cursor-pointer"
+                                                onClick={() =>
+                                                    handleImageClick(index)
+                                                }
+                                            >
                                                 <Image
                                                     src={url}
-                                                    alt={`Post image ${index + 1}`}
+                                                    alt={`Post image ${
+                                                        index + 1
+                                                    }`}
                                                     fill
                                                     className="object-contain"
                                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -377,20 +422,25 @@ export default function SinglePostPage({
                         )}
                     </>
                 )}
-                <div className="flex items-center space-x-4 mb-4">
-                    {Object.values(ReactionType).map((type) => (
-                        <button
-                            key={type}
-                            onClick={() => handleReaction(type)}
-                            className={`px-3 py-1 rounded-full border text-sm text-primary-text hover:bg-primary-text hover:text-secondary-bg transition-colors ${
-                                currentUserReactionType === type
-                                    ? "bg-primary-text text-secondary-bg border-primary-text"
-                                    : "bg-secondary-bg border-border-line"
-                            }`}
-                        >
-                            {type} {post.postLikes.filter((like) => like.type === type).length}
-                        </button>
-                    ))}
+                <div className="flex items-center justify-around md:justify-start md:space-x-2 mb-4">
+                    {Object.values(ReactionType).map((type) => {
+                        const Icon = reactionIcons[type];
+                        return (
+                            <button
+                                key={type}
+                                onClick={() => handleReaction(type)}
+                                className={`flex items-center justify-center space-x-2 px-3 py-1 rounded-full border text-sm transition-colors ${currentUserReactionType === type
+                                        ? "bg-primary-text text-secondary-bg border-primary-text"
+                                        : "bg-secondary-bg text-primary-text border-border-line hover:bg-hover-bg"
+                                    }`}
+                            >
+                                <Icon className="w-5 h-5" />
+                                <span className="font-semibold text-xs">
+                                    {post.postLikes.filter((like) => like.type === type).length}
+                                </span>
+                            </button>
+                        )
+                    })}
                 </div>
                 <CommentSection
                     post={post}

@@ -35,7 +35,7 @@ export default function RootLayout({
       >
         <Providers>
           <Header />
-          <main className="container mx-auto p-4">
+          <main className="container mx-auto p-4 sm:p-6 lg:p-8">
             {children}
           </main>
           <Toaster position="top-right" richColors />

@@ -120,6 +120,8 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
         }
     };
 
+    const baseButtonClasses = "inline-flex items-center justify-center font-semibold py-2 px-4 rounded-lg transition-colors duration-200 ease-in-out";
+
     return (
         <div className="bg-secondary-bg shadow-md rounded-lg p-6 mb-8">
             <form onSubmit={handleSubmit}>
@@ -146,7 +148,7 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
                                 <button
                                     type="button"
                                     onClick={() => handleRemoveImage(index)}
-                                    className="absolute top-1 right-1 bg-primary-text text-primary-bg rounded-full p-1 leading-none"
+                                    className="absolute top-1 right-1 bg-primary-text text-primary-bg rounded-full p-1 leading-none transition-colors duration-200 ease-in-out hover:bg-opacity-80"
                                     aria-label={`Remove image ${index + 1}`}
                                 >
                                     <span className="text-sm">&times;</span>
@@ -159,7 +161,7 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
                     <label
                         htmlFor="image-upload"
                         onClick={handleClick}
-                        className="cursor-pointer bg-border-line text-secondary-bg py-2 px-4 rounded-md hover:bg-secondary-text"
+                        className={`${baseButtonClasses} bg-border-line text-secondary-bg hover:bg-secondary-text cursor-pointer`}
                     >
                         Add Images
                         <input
@@ -179,7 +181,7 @@ const CreatePostForm = ({ onPostCreated }: CreatePostFormProps) => {
                             isSubmitting ||
                             (!text.trim() && imageFiles.length === 0)
                         }
-                        className="bg-secondary-text text-secondary-bg py-2 px-4 rounded-md hover:bg-primary-text disabled:bg-border-line"
+                        className={`${baseButtonClasses} bg-secondary-text text-secondary-bg hover:bg-primary-text disabled:bg-border-line`}
                     >
                         {isSubmitting ? "Posting..." : "Post"}
                     </button>

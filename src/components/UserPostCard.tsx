@@ -16,6 +16,29 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
+const reactionIcons = {
+    LIKE: (props) => (
+        <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.085a2 2 0 00-1.736.97l-1.9 3.8z" />
+        </svg>
+    ),
+    INSIGHTFUL: (props) => (
+        <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.707.707M12 21v-1m-6.364-1.636l.707-.707" />
+        </svg>
+    ),
+    THANKS: (props) => (
+        <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.672l1.318-1.354a4.5 4.5 0 116.364 6.364L12 21.272l-7.682-7.682a4.5 4.5 0 010-6.364z" />
+        </svg>
+    ),
+    HAHA: (props) => (
+        <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+    ),
+};
+
 interface UserPostCardProps {
     post: PostWithRelations;
     onPostUpdate: (updatedPost: PostWithRelations) => void;
@@ -108,7 +131,7 @@ export default function UserPostCard({ post, onPostUpdate, onPostDeleted, showIn
     return (
         <div
             key={post.id}
-            className="bg-secondary-bg shadow-md rounded-lg p-6 mb-6"
+            className="bg-secondary-bg shadow-md rounded-lg p-4 sm:p-6 mb-6"
         >
             <div className="flex items-center mb-4">
                 <Link
@@ -143,7 +166,7 @@ export default function UserPostCard({ post, onPostUpdate, onPostDeleted, showIn
                         <p className="text-primary-text mb-4">{post.text}</p>
                     )}
                     {post.imageUrls && post.imageUrls.length > 0 && (
-                        <div className="mb-4 -mx-6 md:mx-0">
+                        <div className="mb-4">
                             <Swiper
                                 modules={[Navigation, Pagination]}
                                 spaceBetween={10}
@@ -172,20 +195,25 @@ export default function UserPostCard({ post, onPostUpdate, onPostDeleted, showIn
                 </div>
             </Link>
             {showInteractions && (
-                 <div className="flex items-center space-x-4 mb-4">
-                    {Object.values(ReactionType).map((type) => (
-                        <button
-                            key={type}
-                            onClick={() => handleReaction(type)}
-                            className={`px-3 py-1 rounded-full border text-sm text-primary-text hover:bg-primary-text hover:text-secondary-bg transition-colors ${
-                                currentUserReactionType === type
-                                    ? "bg-primary-text text-secondary-bg border-primary-text"
-                                    : "bg-secondary-bg border-border-line"
-                            }`}
-                        >
-                            {type} {post.postLikes.filter((like) => like.type === type).length}
-                        </button>
-                    ))}
+                 <div className="flex items-center justify-around md:justify-start md:space-x-2 mb-4">
+                    {Object.values(ReactionType).map((type) => {
+                        const Icon = reactionIcons[type];
+                        return (
+                            <button
+                                key={type}
+                                onClick={() => handleReaction(type)}
+                                className={`flex items-center justify-center space-x-2 px-3 py-1 rounded-full border text-sm transition-colors ${currentUserReactionType === type
+                                        ? "bg-primary-text text-secondary-bg border-primary-text"
+                                        : "bg-secondary-bg text-primary-text border-border-line hover:bg-hover-bg"
+                                    }`}
+                            >
+                                <Icon className="w-5 h-5" />
+                                <span className="font-semibold text-xs">
+                                    {post.postLikes.filter((like) => like.type === type).length}
+                                </span>
+                            </button>
+                        )
+                    })}
                 </div>
             )}
             <ConfirmModal 

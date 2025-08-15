@@ -92,15 +92,17 @@ export default function FollowButton({
   };
 
   const renderButton = () => {
+    const baseButtonClasses = "inline-flex items-center justify-center font-semibold py-2 px-4 rounded-lg transition-colors duration-200 ease-in-out";
+
     switch (status) {
       case 'following':
-        return <button onClick={handleUnfollow} disabled={isLoading} className="bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300">Unfollow</button>;
+        return <button onClick={handleUnfollow} disabled={isLoading} className={`${baseButtonClasses} bg-secondary-bg text-secondary-text hover:bg-primary-bg`}>Unfollow</button>;
       case 'pending_approval':
-        return <button onClick={handleCancelRequest} disabled={isLoading} className="bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300">Requested</button>;
+        return <button onClick={handleCancelRequest} disabled={isLoading} className={`${baseButtonClasses} bg-secondary-bg text-secondary-text hover:bg-primary-bg`}>Requested</button>;
       case 'can_accept':
-        return <button onClick={handleAcceptRequest} disabled={isLoading} className="bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600">Accept Request</button>;
+        return <button onClick={handleAcceptRequest} disabled={isLoading} className={`${baseButtonClasses} bg-primary-text text-primary-bg hover:bg-secondary-text`}>Accept Request</button>;
       case 'not_following':
-        return <button onClick={handleFollow} disabled={isLoading} className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600">Follow</button>;
+        return <button onClick={handleFollow} disabled={isLoading} className={`${baseButtonClasses} bg-primary-text text-primary-bg hover:bg-secondary-text`}>Follow</button>;
       default:
         return null; // Don't render anything if status is unknown or is_self
     }
