@@ -21,7 +21,7 @@ interface FollowRequestNotificationProps {
     onClick?: () => void;
 }
 
-function NotificationList({ pendingRequests, handleAction }) {
+function NotificationList({ pendingRequests, handleAction }: { pendingRequests: FollowRequestWithFromUser[]; handleAction: (requestId: number, action: "ACCEPTED" | "REJECTED") => Promise<void> }) {
     if (pendingRequests.length === 0) {
         return (
             <div className="px-4 py-2 text-sm text-gray-500">

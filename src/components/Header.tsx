@@ -14,8 +14,8 @@ function FeedToggle() {
   const searchParams = useSearchParams();
   const mode = searchParams.get('mode') || 'following';
 
-  const followingRef = useRef<HTMLSpanElement>(null);
-  const exploreRef = useRef<HTMLSpanElement>(null);
+  const followingRef = useRef<HTMLDivElement>(null);
+  const exploreRef = useRef<HTMLDivElement>(null);
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
 
   useEffect(() => {
@@ -139,7 +139,7 @@ export default function Header() {
                 </button>
               </>
             ) : (
-              <button onClick={() => { handleProfileClick; setIsMenuOpen(false); }} className="text-primary-text hover:text-accent-blue text-lg">
+              <button onClick={(e) => { handleProfileClick(e); setIsMenuOpen(false); }} className="text-primary-text hover:text-accent-blue text-lg">
                 Profile
               </button>
             )}

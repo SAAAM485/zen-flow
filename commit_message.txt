@@ -1,6 +1,15 @@
-feat: Enhance comment section with timestamps and highlight pins
+feat: Improve UI/UX across the application
 
-- Add comment creation timestamps using `date-fns`.
-- Display a pin icon for highlighted comments using `@heroicons/react`.
-- Resolve `no-explicit-any` error in post reaction handling.
-- Fix `prefer-const` linting error in profile view.
+This commit introduces several UI/UX enhancements and bug fixes:
+
+- **Enhanced Mobile Notifications:**
+  - Refactored `FollowRequestNotification` component to support inline and button display modes.
+  - Updated `Header` to provide an inline-expanding notification list in the mobile menu, improving user flow.
+
+- **Responsive Post Layout & Interactions:**
+  - Fixed image overflow in `UserPostCard` by removing problematic negative margins from Swiper containers.
+  - Redesigned reaction buttons in `UserPostCard` and `SinglePostPage` to use geometric line-style icons (LIKE, INSIGHTFUL, THANKS, HAHA) instead of text, improving visual appeal and saving space.
+  - Implemented responsive layout for reaction buttons, ensuring they remain on a single line with text wrapping and responsive font sizes, preventing overflow on various screen sizes.
+
+- **Improved Profile Page Responsiveness:**
+  - Addressed follow button overflow in `ProfileView` by implementing a responsive layout for the profile header, ensuring proper display on smaller screens.
