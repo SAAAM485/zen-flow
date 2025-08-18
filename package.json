@@ -13,6 +13,9 @@
     "test:all": "npm test && npm run test:frontend",
     "db:seed": "node --loader ts-node/esm prisma/seed.ts"
   },
+  "prisma": {
+    "seed": "node --loader ts-node/esm prisma/seed.ts"
+  },
   "dependencies": {
     "@faker-js/faker": "^9.9.0",
     "@headlessui/react": "^2.2.7",

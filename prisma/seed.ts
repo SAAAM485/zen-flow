@@ -13,12 +13,13 @@ async function main() {
     // 創建使用者
     const users = [];
     for (let i = 0; i < 10; i++) {
+        const userEmail = faker.internet.email();
         const user = await prisma.user.upsert({
-            where: { email: faker.internet.email() }, // 使用 email 作為唯一識別符
+            where: { email: userEmail }, // 使用 email 作為唯一識別符
             update: {},
             create: {
                 name: faker.person.fullName(),
-                email: faker.internet.email(),
+                email: userEmail,
                 image: faker.image.avatar(),
                 password: faker.internet.password(), // 僅為測試目的，實際應用中不應這樣處理密碼
             },
@@ -157,6 +158,9 @@ async function main() {
         }
     }
     console.log("Created follow requests and relationships.");
+
+    const userCount = await prisma.user.count();
+    console.log(`Total users in database: ${userCount}`);
 
     console.log("Seeding finished.");
 }
