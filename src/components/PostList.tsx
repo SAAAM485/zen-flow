@@ -13,6 +13,8 @@ interface PostListProps {
 export default function PostList({ initialPosts, showInteractions = true }: PostListProps) {
   const [posts, setPosts] = useState<PostWithRelations[]>(initialPosts);
 
+  console.log("Initial posts in PostList:", initialPosts);
+
   useEffect(() => {
     setPosts(initialPosts); // Update posts state when initialPosts prop changes
   }, [initialPosts]);
