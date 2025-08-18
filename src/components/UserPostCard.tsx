@@ -174,7 +174,7 @@ export default function UserPostCard({ post, onPostUpdate, onPostDeleted, showIn
                                 slidesPerView={1}
                                 navigation
                                 pagination={{ clickable: true }}
-                                loop={true}
+                                loop={post.imageUrls.length > 1}
                                 className="mySwiper rounded-lg"
                             >
                                 {post.imageUrls.map((url, index) => (

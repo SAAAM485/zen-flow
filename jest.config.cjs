@@ -17,4 +17,5 @@ module.exports = {
     '^@/tests/(.*)$': '<rootDir>/tests/$1',
   },
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  setupFiles: ['./jest.setup.console.js'],
 };
