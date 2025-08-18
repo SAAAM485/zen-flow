@@ -11,8 +11,31 @@ async function getPosts(
     mode: string,
     currentUserId?: string
 ): Promise<PostWithRelations[]> {
+    let whereClause = {};
+
+    if (mode === 'following' && currentUserId) {
+        const following = await prisma.follow.findMany({
+            where: { followerId: currentUserId },
+            select: { followingId: true },
+        });
+        const followingIds = following.map((f) => f.followingId);
+
+        whereClause = {
+            authorId: {
+                in: followingIds,
+            },
+        };
+    } else if (mode === 'explore' && currentUserId) {
+        whereClause = {
+            authorId: {
+                not: currentUserId,
+            },
+        };
+    }
+
     try {
         const posts = await prisma.post.findMany({
+            where: whereClause,
             orderBy: {
                 createdAt: 'desc',
             },
@@ -46,13 +69,16 @@ async function getPosts(
 export default async function Home({
     searchParams,
 }: {
-    searchParams: { mode?: string };
+    searchParams: Promise<{ mode?: string }>;
 }) {
+    const resolvedSearchParams = await searchParams;
+    const modeFromParams = resolvedSearchParams.mode;
+
     const session = await getServerSession(authOptions);
     const currentUserId = session?.user?.id;
 
     // Determine mode using the searchParams prop, which is more reliable
-    const mode = searchParams.mode || (session ? "following" : "explore");
+    const mode = modeFromParams || (session ? "following" : "explore");
 
     const posts = await getPosts(mode, currentUserId);
 
