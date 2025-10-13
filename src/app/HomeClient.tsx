@@ -16,31 +16,51 @@ export default function HomeClient() {
     const [posts, setPosts] = useState<PostWithRelations[]>([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
-    const [isLoading, setIsLoading] = useState(true); // Start with loading true
+    const [isLoading, setIsLoading] = useState(true);
     
     const mode = searchParams.get('mode') || (session ? 'following' : 'explore');
 
     const observer = useRef<IntersectionObserver | null>(null);
 
-    const loadMorePosts = useCallback(async (isInitialLoad = false) => {
-        if (isLoading && !isInitialLoad) return;
+    // Effect for initial load and when the mode changes
+    useEffect(() => {
+        const fetchInitialData = async () => {
+            setIsLoading(true);
+            setPosts([]);
+            setPage(1);
+            try {
+                const res = await fetch(`/api/posts?mode=${mode}&page=1`);
+                const initialPosts: PostWithRelations[] = await res.json();
+                setPosts(initialPosts);
+                setPage(2); // Set page for the next fetch
+                setHasMore(initialPosts.length === POST_PAGE_SIZE);
+            } catch (error) {
+                console.error("Failed to fetch initial posts:", error);
+                setHasMore(false);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchInitialData();
+    }, [mode]);
+
+    // Function for subsequent loads (infinite scroll)
+    const loadMore = useCallback(async () => {
+        if (isLoading || !hasMore) return;
         setIsLoading(true);
-
-        const targetPage = isInitialLoad ? 1 : page;
-
         try {
-            const res = await fetch(`/api/posts?mode=${mode}&page=${targetPage}`);
+            const res = await fetch(`/api/posts?mode=${mode}&page=${page}`);
             const newPosts: PostWithRelations[] = await res.json();
-            
-            setPosts(prevPosts => isInitialLoad ? newPosts : [...prevPosts, ...newPosts]);
-            setPage(targetPage + 1);
+            setPosts(prev => [...prev, ...newPosts]);
+            setPage(prev => prev + 1);
             setHasMore(newPosts.length === POST_PAGE_SIZE);
         } catch (error) {
-            console.error("Failed to fetch posts:", error);
+            console.error("Failed to fetch more posts:", error);
         } finally {
             setIsLoading(false);
         }
-    }, [page, mode, isLoading]);
+    }, [isLoading, hasMore, page, mode]);
 
     const lastPostElementRef = useCallback((node: HTMLDivElement) => {
         if (isLoading) return;
@@ -48,24 +68,16 @@ export default function HomeClient() {
         
         observer.current = new IntersectionObserver(entries => {
             if (entries[0].isIntersecting && hasMore) {
-                loadMorePosts();
+                loadMore();
             }
         });
         
         if (node) observer.current.observe(node);
-    }, [isLoading, hasMore, loadMorePosts]);
-
-    useEffect(() => {
-        // Trigger fetch when mode changes
-        setPosts([]);
-        setPage(1);
-        setHasMore(true);
-        setIsLoading(true);
-        loadMorePosts(true); // Pass true for initial load
-    }, [mode, loadMorePosts]); // FIX: Added loadMorePosts to dependency array
+    }, [isLoading, hasMore, loadMore]);
 
     return (
         <main className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8">
+            {/* Show skeleton only on the very first load */}
             {isLoading && posts.length === 0 ? (
                 <div>
                     <PostSkeleton />
