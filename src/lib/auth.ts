@@ -4,20 +4,54 @@ import { AdapterUser } from "next-auth/adapters";
 import { JWT } from "next-auth/jwt";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
+
+const providers = [
+  GitHubProvider({
+    clientId: process.env.GITHUB_ID as string,
+    clientSecret: process.env.GITHUB_SECRET as string,
+  }),
+  GoogleProvider({
+    clientId: process.env.GOOGLE_ID as string,
+    clientSecret: process.env.GOOGLE_SECRET as string,
+  }),
+];
+
+if (process.env.NODE_ENV !== 'production') {
+  providers.push(
+    CredentialsProvider({
+      name: 'Mock User',
+      credentials: {
+        email: { label: "Email", type: "text", placeholder: "test@example.com" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email) {
+          return null;
+        }
+        // Find or create a mock user for testing
+        let user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        });
+
+        if (!user) {
+          user = await prisma.user.create({
+            data: {
+              email: credentials.email,
+              name: credentials.email.split('@')[0], // Use part of email as name
+              image: `https://source.boringavatars.com/beam/120/${encodeURIComponent(credentials.email)}` // Generate a consistent avatar
+            },
+          });
+        }
+        return user;
+      },
+    })
+  );
+}
 
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
-  providers: [
-    GitHubProvider({
-      clientId: process.env.GITHUB_ID as string,
-      clientSecret: process.env.GITHUB_SECRET as string,
-    }),
-    GoogleProvider({
-      clientId: process.env.GOOGLE_ID as string,
-      clientSecret: process.env.GOOGLE_SECRET as string,
-    }),
-  ],
+  providers: providers,
   session: {
     strategy: "jwt",
   },
