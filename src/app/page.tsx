@@ -8,9 +8,10 @@ import { getPosts } from "@/lib/post-utils";
 export default async function Home({
     searchParams,
 }: {
-    searchParams: { mode?: string };
+    searchParams: Promise<{ mode?: string }>;
 }) {
-    const modeFromParams = searchParams.mode;
+    const resolvedSearchParams = await searchParams;
+    const modeFromParams = resolvedSearchParams.mode;
     const session = await getServerSession(authOptions);
     const currentUserId = session?.user?.id;
     const mode = modeFromParams || (session ? "following" : "explore");

@@ -10,24 +10,24 @@ export async function getPosts(
     currentUserId: number | undefined,
     page: number = 1
 ): Promise<PostWithRelations[]> {
-    let whereClause: Prisma.PostWhereInput = {};
+    const whereClause: Prisma.PostWhereInput = {};
 
-    if (mode === 'following' && currentUserId) {
+    if (mode === "following" && currentUserId) {
         const following = await prisma.follow.findMany({
             where: { followerId: currentUserId },
             select: { followingId: true },
         });
         const followingIds = following.map((f) => f.followingId);
         whereClause.authorId = { in: followingIds };
-    } else if (mode === 'explore' && currentUserId) {
+    } else if (mode === "explore" && currentUserId) {
         whereClause.authorId = { not: currentUserId };
     }
-    
+
     try {
         const posts = await prisma.post.findMany({
             where: whereClause,
             orderBy: {
-                createdAt: 'desc',
+                createdAt: "desc",
             },
             take: POST_PAGE_SIZE,
             skip: (page - 1) * POST_PAGE_SIZE,
