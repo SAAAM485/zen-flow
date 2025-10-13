@@ -26,25 +26,11 @@ if (process.env.NODE_ENV !== 'production') {
         email: { label: "Email", type: "text", placeholder: "test@example.com" },
       },
       async authorize(credentials) {
-        if (!credentials?.email) {
-          return null;
+        if (credentials?.email) {
+          // Return a hardcoded, type-safe user object for debugging
+          return { id: "1", email: credentials.email, name: "Test User" };
         }
-        // Find or create a mock user for testing
-        let user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
-
-        if (!user) {
-          user = await prisma.user.create({
-            data: {
-              email: credentials.email,
-              name: credentials.email.split('@')[0], // Use part of email as name
-              image: `https://source.boringavatars.com/beam/120/${encodeURIComponent(credentials.email)}` // Generate a consistent avatar
-            },
-          });
-        }
-        // The authorize callback needs to return an object with a string ID.
-        return { ...user, id: user.id.toString() };
+        return null;
       },
     })
   );
