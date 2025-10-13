@@ -1,72 +1,36 @@
 import { GET, POST } from "@/app/api/posts/route";
 import { prismaMock, getServerSessionMock } from "../../setup";
 import { NextRequest } from "next/server";
+import { getPosts } from "@/lib/post-utils";
+
+jest.mock('@/lib/post-utils');
+const mockedGetPosts = getPosts as jest.Mock;
 
 describe("GET /api/posts", () => {
-  it("should return a list of posts in chronological order", async () => {
-    const mockPosts = [
-      {
-        id: 2,
-        text: "Second post",
-        authorId: 1,
-        imageUrls: [],
-        createdAt: new Date("2025-07-31T10:00:00.000Z"),
-        updatedAt: new Date("2025-07-31T10:00:00.000Z"),
-      },
-      {
-        id: 1,
-        text: "First post",
-        authorId: 1,
-        imageUrls: ["http://example.com/image.png"],
-        createdAt: new Date("2025-07-31T09:00:00.000Z"),
-        updatedAt: new Date("2025-07-31T09:00:00.000Z"),
-      },
-    ];
-    prismaMock.post.findMany.mockResolvedValue(mockPosts as any);
+  beforeEach(() => {
+    mockedGetPosts.mockClear();
+    getServerSessionMock.mockResolvedValue(null); // Default to logged out
+  });
 
-    const req = { url: 'http://localhost/api/posts' } as NextRequest;
+  it("should call getPosts and return its result", async () => {
+    const mockPosts = [{ id: 1, text: "Test Post" }];
+    mockedGetPosts.mockResolvedValue(mockPosts);
+
+    const req = { url: 'http://localhost/api/posts?mode=explore&page=1' } as NextRequest;
     const response = await GET(req);
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data.length).toBe(2);
-    expect(data[0].id).toBe(2); // Verify the order is descending
-    expect(data[1].id).toBe(1);
-    expect(prismaMock.post.findMany).toHaveBeenCalledWith({
-      where: {},
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
-        author: true,
-        comments: {
-          include: {
-            author: true,
-            commentLikes: {
-              include: {
-                user: true,
-              },
-            },
-          },
-        },
-        postLikes: {
-          include: {
-            user: true,
-          },
-        },
-      },
-    });
+    expect(data).toEqual(mockPosts);
+    expect(mockedGetPosts).toHaveBeenCalledWith('explore', undefined, 1);
   });
 
-  it("should return 500 if an internal server error occurs", async () => {
-    prismaMock.post.findMany.mockRejectedValue(new Error("Database error"));
-
+  it("should return 400 if parameters are missing", async () => {
     const req = { url: 'http://localhost/api/posts' } as NextRequest;
     const response = await GET(req);
+    expect(response.status).toBe(400);
     const data = await response.json();
-
-    expect(response.status).toBe(500);
-    expect(data).toEqual({ error: "Something went wrong" });
+    expect(data).toEqual({ error: 'Missing page or mode parameter' });
   });
 });
 

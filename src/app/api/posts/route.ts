@@ -7,15 +7,18 @@ import { prisma } from '@/lib/prisma';
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const page = searchParams.get('page');
-  const mode = searchParams.get('mode');
-
-  if (!page || !mode) {
-    return NextResponse.json({ error: 'Missing page or mode parameter' }, { status: 400 });
+  
+  if (!page) {
+    return NextResponse.json({ error: 'Missing page parameter' }, { status: 400 });
   }
+
+  const modeParam = searchParams.get('mode');
 
   try {
     const session = await getServerSession(authOptions);
     const currentUserId = session?.user?.id;
+
+    const mode = modeParam || (session ? "following" : "explore");
 
     const posts = await getPosts(mode, currentUserId, parseInt(page, 10));
 

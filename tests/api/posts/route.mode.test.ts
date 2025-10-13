@@ -61,7 +61,7 @@ describe("GET /api/posts with mode parameter", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data).toEqual({ error: 'Missing page or mode parameter' });
+    expect(data).toEqual({ error: 'Missing page parameter' });
     expect(mockedGetPosts).not.toHaveBeenCalled();
   });
 });
