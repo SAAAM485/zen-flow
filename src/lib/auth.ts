@@ -44,8 +44,9 @@ if (process.env.NODE_ENV !== 'production') {
             },
           });
         }
-        // The authorize callback needs to return an object with a string ID.
-        return { ...user, id: user.id.toString() };
+        // Return the user object directly. The user ID is a number, which is
+        // consistent with the rest of the app's auth flow (e.g., JWT callback).
+        return user;
       },
     })
   );
