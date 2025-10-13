@@ -43,7 +43,8 @@ if (process.env.NODE_ENV !== 'production') {
             },
           });
         }
-        return user;
+        // The authorize callback needs to return an object with a string ID.
+        return { ...user, id: user.id.toString() };
       },
     })
   );
