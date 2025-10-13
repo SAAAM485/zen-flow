@@ -25,12 +25,17 @@ export default function HomeClient() {
     // Effect for initial load and when the mode changes
     useEffect(() => {
         const fetchInitialData = async () => {
+            if (sessionStatus === 'loading') { // Prevent fetching during loading state
+                setIsLoading(true); // Still show loading state
+                return;
+            }
+
             setIsLoading(true);
             setPosts([]); // Clear old posts
             setPage(1);   // Reset page counter
             try {
                 // Calculate mode inside useEffect to ensure it uses latest session status
-                const currentMode = modeParam || (sessionStatus === 'authenticated' ? 'following' : 'explore'); // FIX 1: Use sessionStatus
+                const currentMode = modeParam || (sessionStatus === 'authenticated' ? 'following' : 'explore');
                 const res = await fetch(`/api/posts?mode=${currentMode}&page=1`);
                 const initialPosts: PostWithRelations[] = await res.json();
                 setPosts(initialPosts);
@@ -45,7 +50,7 @@ export default function HomeClient() {
         };
 
         fetchInitialData();
-    }, [searchParams, sessionStatus, modeParam]); // FIX 2: Added modeParam to dependencies
+    }, [searchParams, sessionStatus, modeParam]); // Depend on searchParams and session.status
 
     // Function for subsequent loads (infinite scroll)
     const loadMore = useCallback(async () => {
