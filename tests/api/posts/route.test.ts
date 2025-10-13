@@ -30,7 +30,7 @@ describe("GET /api/posts", () => {
     const response = await GET(req);
     expect(response.status).toBe(400);
     const data = await response.json();
-    expect(data).toEqual({ error: 'Missing page or mode parameter' });
+    expect(data).toEqual({ error: 'Missing page parameter' });
   });
 });
 
