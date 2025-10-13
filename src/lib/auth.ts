@@ -6,8 +6,9 @@ import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
+import { Provider } from "next-auth/providers/index";
 
-const providers = [
+const providers: Provider[] = [
   GitHubProvider({
     clientId: process.env.GITHUB_ID as string,
     clientSecret: process.env.GITHUB_SECRET as string,
@@ -26,11 +27,25 @@ if (process.env.NODE_ENV !== 'production') {
         email: { label: "Email", type: "text", placeholder: "test@example.com" },
       },
       async authorize(credentials) {
-        if (credentials?.email) {
-          // Return a hardcoded, type-safe user object for debugging
-          return { id: "1", email: credentials.email, name: "Test User" };
+        if (!credentials?.email) {
+          return null;
         }
-        return null;
+        // Find or create a mock user for testing
+        let user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        });
+
+        if (!user) {
+          user = await prisma.user.create({
+            data: {
+              email: credentials.email,
+              name: credentials.email.split('@')[0], // Use part of email as name
+              image: `https://source.boringavatars.com/beam/120/${encodeURIComponent(credentials.email)}` // Generate a consistent avatar
+            },
+          });
+        }
+        // The authorize callback needs to return an object with a string ID.
+        return { ...user, id: user.id.toString() };
       },
     })
   );
