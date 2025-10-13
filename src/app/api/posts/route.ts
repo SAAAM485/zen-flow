@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { getPosts } from '@/app/page'; // Import the function from page.tsx
+import { getPosts } from '@/lib/post-utils';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
