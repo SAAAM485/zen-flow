@@ -11,14 +11,16 @@ const POST_PAGE_SIZE = 10;
 
 export default function HomeClient() {
     const searchParams = useSearchParams();
-    const { data: session } = useSession();
+    const { data: sessionData, status: sessionStatus } = useSession(); // FIX 1: Destructure data and status
     
     const [posts, setPosts] = useState<PostWithRelations[]>([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
     
-    const mode = searchParams.get('mode'); // Removed default here
+    const modeParam = searchParams.get('mode'); // Renamed to avoid conflict with useEffect dependency
+
+    const observer = useRef<IntersectionObserver | null>(null);
 
     // Effect for initial load and when the mode changes
     useEffect(() => {
@@ -28,7 +30,7 @@ export default function HomeClient() {
             setPage(1);   // Reset page counter
             try {
                 // Calculate mode inside useEffect to ensure it uses latest session status
-                const currentMode = mode || (session?.status === 'authenticated' ? 'following' : 'explore');
+                const currentMode = modeParam || (sessionStatus === 'authenticated' ? 'following' : 'explore'); // FIX 1: Use sessionStatus
                 const res = await fetch(`/api/posts?mode=${currentMode}&page=1`);
                 const initialPosts: PostWithRelations[] = await res.json();
                 setPosts(initialPosts);
@@ -43,7 +45,7 @@ export default function HomeClient() {
         };
 
         fetchInitialData();
-    }, [searchParams, session?.status]); // Depend on searchParams and session.status
+    }, [searchParams, sessionStatus, modeParam]); // FIX 2: Added modeParam to dependencies
 
     // Function for subsequent loads (infinite scroll)
     const loadMore = useCallback(async () => {
@@ -51,7 +53,7 @@ export default function HomeClient() {
         setIsLoading(true);
         try {
             // Calculate mode inside useCallback to ensure it uses latest session status
-            const currentMode = mode || (session?.status === 'authenticated' ? 'following' : 'explore');
+            const currentMode = modeParam || (sessionStatus === 'authenticated' ? 'following' : 'explore'); // FIX 1: Use sessionStatus
             const res = await fetch(`/api/posts?mode=${currentMode}&page=${page}`);
             const newPosts: PostWithRelations[] = await res.json();
             setPosts(prev => [...prev, ...newPosts]);
@@ -62,7 +64,7 @@ export default function HomeClient() {
         } finally {
             setIsLoading(false);
         }
-    }, [isLoading, hasMore, page, mode, session?.status, searchParams]);
+    }, [isLoading, hasMore, page, modeParam, sessionStatus]); // FIX 3: Removed searchParams, added modeParam, sessionStatus
 
     const lastPostElementRef = useCallback((node: HTMLDivElement) => {
         if (isLoading) return;
