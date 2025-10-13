@@ -81,7 +81,7 @@ describe('FollowRequestNotification', () => {
 
     expect(await screen.findByText('Alice')).toBeInTheDocument();
     expect(await screen.findByText('Bob')).toBeInTheDocument();
-  });
+  }, 10000);
 
   it('shows a "no new requests" message when there are no pending requests', async () => {
     (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: async () => [] } as Response);

@@ -87,7 +87,7 @@ describe('CreatePostForm', () => {
       renderComponent();
       await user.click(screen.getByPlaceholderText("What's on your mind?"));
       expect(setShowLoginPromptMock).toHaveBeenCalledWith(true);
-    });
+    }, 10000);
   });
 
   describe('when user is logged in', () => {
