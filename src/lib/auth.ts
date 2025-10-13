@@ -19,7 +19,7 @@ const providers: Provider[] = [
   }),
 ];
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.VERCEL_ENV !== 'production') {
   providers.push(
     CredentialsProvider({
       name: 'Mock User',
@@ -58,7 +58,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 export const authOptions: AuthOptions = {
-  adapter: process.env.NODE_ENV === 'production' ? PrismaAdapter(prisma) : undefined,
+  adapter: process.env.VERCEL_ENV === 'production' ? PrismaAdapter(prisma) : undefined,
   providers: providers,
   session: {
     strategy: "jwt",

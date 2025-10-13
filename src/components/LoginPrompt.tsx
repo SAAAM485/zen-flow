@@ -29,7 +29,7 @@ const LoginPrompt: React.FC = () => {
                     Join us to share your flow
                 </p>
                 <div className="flex flex-col space-y-3">
-                    {process.env.NODE_ENV !== 'production' && (
+                    {process.env.VERCEL_ENV !== 'production' && (
                         <>
                             <form onSubmit={handleMockLogin} className="flex flex-col space-y-3">
                                 <input 
