@@ -19,7 +19,7 @@ export default function PostList({ initialPosts, mode }: PostListProps) {
   const [hasMore, setHasMore] = useState(initialPosts.length === POST_PAGE_SIZE);
   const [isLoading, setIsLoading] = useState(false);
   
-  const observer = useRef<IntersectionObserver>();
+  const observer = useRef<IntersectionObserver | null>(null);
 
   const loadMorePosts = useCallback(async () => {
     if (isLoading || !hasMore) return;
