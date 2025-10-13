@@ -51,7 +51,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 export const authOptions: AuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  adapter: process.env.NODE_ENV === 'production' ? PrismaAdapter(prisma) : undefined,
   providers: providers,
   session: {
     strategy: "jwt",
