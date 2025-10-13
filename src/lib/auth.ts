@@ -27,26 +27,31 @@ if (process.env.NODE_ENV !== 'production') {
         email: { label: "Email", type: "text", placeholder: "test@example.com" },
       },
       async authorize(credentials) {
-        if (!credentials?.email) {
+        try {
+          if (!credentials?.email) {
+            return null;
+          }
+          // Find or create a mock user for testing
+          let user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+          });
+
+          if (!user) {
+            user = await prisma.user.create({
+              data: {
+                email: credentials.email,
+                name: credentials.email.split('@')[0], // Use part of email as name
+                image: `https://source.boringavatars.com/beam/120/${encodeURIComponent(credentials.email)}` // Generate a consistent avatar
+              },
+            });
+          }
+          // Return the user object directly. The user ID is a number, which is
+          // consistent with the rest of the app's auth flow (e.g., JWT callback).
+          return user;
+        } catch (error) {
+          console.error("Authorize Error:", error);
           return null;
         }
-        // Find or create a mock user for testing
-        let user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
-
-        if (!user) {
-          user = await prisma.user.create({
-            data: {
-              email: credentials.email,
-              name: credentials.email.split('@')[0], // Use part of email as name
-              image: `https://source.boringavatars.com/beam/120/${encodeURIComponent(credentials.email)}` // Generate a consistent avatar
-            },
-          });
-        }
-        // Return the user object directly. The user ID is a number, which is
-        // consistent with the rest of the app's auth flow (e.g., JWT callback).
-        return user;
       },
     })
   );
