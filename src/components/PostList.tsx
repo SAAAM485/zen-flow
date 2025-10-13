@@ -101,7 +101,7 @@ export default function PostList({ initialPosts, mode }: PostListProps) {
         }
       })}
       {isLoading && <p className="text-center p-4">Loading more posts...</p>}
-      {!hasMore && posts.length > 0 && <p className="text-center p-4">You've reached the end.</p>}
+      {!hasMore && posts.length > 0 && <p className="text-center p-4">You&apos;ve reached the end.</p>}
       {posts.length === 0 && !isLoading && <p className="text-center p-4">No posts to show.</p>}
     </div>
   );

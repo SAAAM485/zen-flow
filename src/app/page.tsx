@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PostWithRelations } from "@/types/prisma";
+import { Prisma } from "@prisma/client";
 
 const POST_PAGE_SIZE = 10;
 
@@ -14,7 +15,7 @@ export async function getPosts(
     currentUserId: number | undefined,
     page: number = 1
 ): Promise<PostWithRelations[]> {
-    let whereClause: any = {};
+    const whereClause: Prisma.PostWhereInput = {};
 
     if (mode === 'following' && currentUserId) {
         const following = await prisma.follow.findMany({
